@@ -114,13 +114,17 @@
     @apply font-mono tracking-tighter;
   }
   .custom-scrollbar::-webkit-scrollbar {
-    width: 6px;
-    height: 6px;
+    width: 10px;
+    height: 10px;
   }
   .custom-scrollbar::-webkit-scrollbar-track {
-    @apply bg-transparent;
+    @apply bg-slate-100/50 rounded-full;
   }
   .custom-scrollbar::-webkit-scrollbar-thumb {
-    @apply bg-slate-300 rounded-full hover:bg-slate-400 transition-colors;
+    @apply bg-slate-400 rounded-full hover:bg-slate-500 border-2 border-slate-100/50 transition-colors;
+  }
+  .custom-scrollbar {
+    scrollbar-width: thin;
+    scrollbar-color: #94a3b8 transparent;
   }
 }

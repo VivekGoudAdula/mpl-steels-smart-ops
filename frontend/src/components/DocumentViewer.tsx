@@ -4,26 +4,19 @@ import {
   X, 
   Download, 
   ExternalLink, 
-  File, 
-  Maximize2, 
-  ZoomIn, 
-  ZoomOut, 
   Loader2,
   FileText,
   Info,
   History,
   ChevronRight,
-  ShieldCheck
+  ShieldCheck,
+  Maximize2
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
   DialogContent,
-  DialogHeader,
-  DialogTitle,
 } from "@/components/ui/dialog";
-import { cn } from "@/lib/utils";
-import { motion, AnimatePresence } from "motion/react";
 
 interface DocumentViewerProps {
   document: any;
@@ -33,8 +26,6 @@ interface DocumentViewerProps {
 
 export default function DocumentViewer({ document: doc, isOpen, onClose }: DocumentViewerProps) {
   const [isLoading, setIsLoading] = useState(true);
-  const [zoom, setZoom] = useState(100);
-  const [showMetadata, setShowMetadata] = useState(true);
 
   useEffect(() => {
     if (isOpen) {
@@ -47,9 +38,9 @@ export default function DocumentViewer({ document: doc, isOpen, onClose }: Docum
   if (!doc) return null;
 
   const isPdf = doc.fileName.toLowerCase().endsWith(".pdf");
-  // Using a more reliable PDF for demo purposes
+  // Use the local Xerox scan if it's a PDF, otherwise a fallback
   const fileUrl = isPdf 
-    ? "https://raw.githubusercontent.com/mozilla/pdf.js/ba2edeae/web/compressed.tracemonkey-pldi-09.pdf" 
+    ? "/xerox-scan.pdf" 
     : "https://picsum.photos/seed/steel/800/1200";
 
   const handleDownload = () => {
@@ -90,29 +81,6 @@ export default function DocumentViewer({ document: doc, isOpen, onClose }: Docum
             </div>
 
             <div className="flex items-center gap-3">
-              {/* Zoom Controls */}
-              <div className="flex items-center bg-slate-100 rounded-full p-1 mr-2">
-                <Button 
-                  variant="ghost" 
-                  size="icon" 
-                  className="h-8 w-8 rounded-full hover:bg-white transition-all"
-                  onClick={() => setZoom(prev => Math.max(50, prev - 10))}
-                >
-                  <ZoomOut size={16} />
-                </Button>
-                <span className="text-[10px] font-mono font-bold w-12 text-center text-slate-600">{zoom}%</span>
-                <Button 
-                  variant="ghost" 
-                  size="icon" 
-                  className="h-8 w-8 rounded-full hover:bg-white transition-all"
-                  onClick={() => setZoom(prev => Math.min(200, prev + 10))}
-                >
-                  <ZoomIn size={16} />
-                </Button>
-              </div>
-
-              <div className="h-6 w-px bg-slate-200 mx-1" />
-
               <Button 
                 variant="outline" 
                 size="sm" 
@@ -147,61 +115,20 @@ export default function DocumentViewer({ document: doc, isOpen, onClose }: Docum
 
           {/* Split Layout: Document (Left) | Metadata (Right) */}
           <div className="flex-1 flex overflow-hidden">
-            {/* Left: Document View Area (75%) */}
-            <div className="flex-[3] overflow-y-auto bg-slate-200/40 custom-scrollbar h-full px-8 py-12">
-              <div 
-                className="relative mx-auto transition-all duration-300 ease-in-out"
-                style={{ 
-                  width: `${zoom}%`,
-                  maxWidth: zoom > 100 ? 'none' : '1000px',
-                  minWidth: '400px'
-                }}
-              >
+            {/* Left: Native Document View Area (75%) */}
+            <div className="flex-[3] bg-slate-200/40 h-full p-4">
+              <div className="w-full h-full bg-white rounded-2xl shadow-xl overflow-hidden border border-slate-200">
                 {isLoading ? (
-                  <div className="w-full aspect-[1/1.414] bg-white rounded-2xl shadow-xl flex flex-col items-center justify-center gap-4">
+                  <div className="w-full h-full flex flex-col items-center justify-center gap-4">
                     <Loader2 className="w-10 h-10 text-slate-200 animate-spin" />
-                    <p className="text-[10px] font-bold uppercase tracking-widest text-slate-400">Initializing Viewer...</p>
+                    <p className="text-[10px] font-bold uppercase tracking-widest text-slate-400">Loading Native Viewer...</p>
                   </div>
                 ) : (
-                  <motion.div 
-                    initial={{ opacity: 0, scale: 0.98, y: 10 }}
-                    animate={{ opacity: 1, scale: 1, y: 0 }}
-                    className="w-full bg-white rounded-2xl shadow-[0_20px_50px_rgba(0,0,0,0.1)] border border-slate-200 overflow-hidden"
-                  >
-                    {/* High-Fidelity Quotation PDF Mock */}
-                    <div className="aspect-[1/1.414] bg-white p-[8%] flex flex-col font-sans text-black">
-                      <div className="mb-16 text-center">
-                        <h1 className="text-4xl font-black tracking-tight mb-4">JSW Steel - Steel Quotation</h1>
-                        <div className="h-1.5 w-20 bg-black mx-auto rounded-full opacity-10" />
-                      </div>
-
-                      <div className="w-full border-2 border-black rounded-lg overflow-hidden">
-                        <div className="grid grid-cols-[1fr_2fr] border-b-2 border-black bg-slate-50">
-                          <div className="p-4 font-bold border-r-2 border-black text-xs uppercase tracking-widest">Parameter</div>
-                          <div className="p-4 font-bold text-xs uppercase tracking-widest">Details</div>
-                        </div>
-                        <QuotationRow label="Vendor Name" value="JSW Steel" />
-                        <QuotationRow label="Price per ton" value="₹4800" />
-                        <QuotationRow label="Delivery Time" value="7 days" />
-                        <QuotationRow label="Steel Grade" value="A" />
-                        <QuotationRow label="Thickness" value="8 mm" />
-                        <QuotationRow label="Payment Terms" value="Net 45 days" />
-                        <QuotationRow label="Remarks" value="Lower cost, but thinner material" isLast />
-                      </div>
-
-                      <div className="mt-auto pt-20 flex justify-between items-end opacity-40">
-                        <div className="space-y-2">
-                          <p className="text-[10px] font-black uppercase tracking-widest">Authorized Signatory</p>
-                          <div className="w-40 h-12 border-b-2 border-black italic flex items-end text-sm pb-1">JSW Sales Team</div>
-                        </div>
-                        <div className="text-right text-[8px] font-mono space-y-1">
-                          <p className="font-bold">REF: JSW/QT/2024/0882</p>
-                          <p>DIGITAL COPY - MPL STEELS OS</p>
-                          <p>VERIFIED: {new Date().toLocaleDateString()}</p>
-                        </div>
-                      </div>
-                    </div>
-                  </motion.div>
+                  <iframe 
+                    src={`${fileUrl}#toolbar=1&navpanes=0&view=FitH`} 
+                    className="w-full h-full border-none"
+                    title="PDF Viewer"
+                  />
                 )}
               </div>
             </div>
@@ -271,15 +198,6 @@ function MetadataItem({ label, value }: { label: string, value: string }) {
     <div className="space-y-1">
       <p className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">{label}</p>
       <p className="text-sm font-bold text-slate-900">{value || "N/A"}</p>
-    </div>
-  );
-}
-
-function QuotationRow({ label, value, isLast }: { label: string, value: string, isLast?: boolean }) {
-  return (
-    <div className={cn("grid grid-cols-[1fr_2fr]", !isLast && "border-b-2 border-black")}>
-      <div className="p-5 font-bold border-r-2 border-black bg-slate-50/50 text-sm uppercase tracking-wider">{label}</div>
-      <div className="p-5 text-base font-medium">{value}</div>
     </div>
   );
 }
