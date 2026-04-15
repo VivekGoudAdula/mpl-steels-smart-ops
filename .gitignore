@@ -6,3 +6,6 @@ coverage/
 *.log
 .env*
 !.env.example
+
+# Documents
+MPL_Steels_DMS_&_Automation_Proposal.pdf
