@@ -132,67 +132,76 @@ export default function VendorsModule() {
           <Star 
             key={star}
             size={12} 
-            className={star <= Math.round(rating) ? "fill-slate-900 text-slate-900" : "text-slate-200"} 
+            className={star <= Math.round(rating) ? "fill-[#002147] text-[#002147]" : "text-gray-200"} 
           />
         ))}
-        <span className="ml-2 text-xs font-black text-slate-900 text-data">{rating.toFixed(1)}</span>
+        <span className="ml-2 text-xs font-bold text-gray-900">{rating.toFixed(1)}</span>
       </div>
     );
   };
 
   return (
-    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 animate-in fade-in duration-700">
-      {/* Header Section */}
-      <div className="flex flex-col md:flex-row md:items-end justify-between mb-10 gap-6 pb-6 border-b border-slate-200">
+    <div className="animate-in fade-in duration-500 space-y-8">
+      {/* 1. Page Header */}
+      <div className="flex flex-col md:flex-row md:items-center justify-between gap-6 pt-2">
         <div>
           <div className="flex items-center gap-2 mb-2">
-            <div className="h-1 w-8 bg-slate-900 rounded-full"></div>
-            <span className="text-[10px] font-bold text-slate-400 uppercase tracking-[0.2em]">Supply Chain</span>
+            <div className="w-5 h-5 flex items-center justify-center">
+              <svg viewBox="0 0 24 24" className="w-4 h-4 text-slate-400 fill-none stroke-current stroke-2">
+                <path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2" />
+                <circle cx="9" cy="7" r="4" />
+                <path d="M23 21v-2a4 4 0 00-3-3.87" />
+                <path d="M16 3.13a4 4 0 010 7.75" />
+              </svg>
+            </div>
+            <span className="text-[10px] font-black uppercase tracking-[0.3em] text-slate-400">Supply Chain Network</span>
           </div>
-          <h1 className="text-4xl font-bold text-slate-900 tracking-tight">Vendor Directory</h1>
-          <p className="text-slate-500 mt-2 text-sm leading-relaxed">Manage supplier information, performance metrics, and compliance status.</p>
+          <h1 className="text-3xl font-bold text-slate-900 tracking-tight mb-2">Vendor Directory</h1>
+          <p className="text-slate-500 font-medium">Manage supplier information, performance metrics, and compliance status.</p>
         </div>
-        <Button 
+        <button 
           onClick={() => setIsAddModalOpen(true)}
-          className="bg-slate-900 text-white hover:bg-slate-800 rounded-2xl px-6 h-11 font-bold shadow-lg shadow-slate-200 transition-all hover:scale-[1.02]"
+          className="enterprise-button-primary px-8 gap-3 shadow-md shadow-slate-200"
         >
-          <Plus className="w-4 h-4 mr-2" />
-          Register New Vendor
-        </Button>
+          <Plus className="w-5 h-5 stroke-[3px]" />
+          <span>Register New Vendor</span>
+        </button>
       </div>
 
+
+
       {/* Filters & Search */}
-      <div className="bg-white p-5 rounded-3xl border border-slate-100 mb-8 flex flex-col md:flex-row gap-6 items-center justify-between shadow-sm">
+      <div className="enterprise-card py-4 flex flex-col md:flex-row gap-4 items-center justify-between">
         <div className="relative w-full md:w-96">
-          <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 w-4 h-4" />
+          <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 w-4 h-4" />
           <Input 
             placeholder="Search by name, ID or contact..." 
-            className="pl-12 bg-slate-50/50 border-transparent focus:border-slate-200 focus:bg-white rounded-2xl text-sm transition-all h-11"
+            className="enterprise-input w-full !pl-10"
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
           />
         </div>
-        <div className="flex items-center gap-3 px-4 py-2 bg-slate-50 rounded-2xl border border-slate-100">
-          <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Active Suppliers:</span>
-          <span className="text-sm font-black text-slate-900 text-data">{vendors.length}</span>
+        <div className="flex items-center gap-3 px-4 py-2 bg-gray-50 rounded-xl border border-gray-200">
+          <span className="text-[10px] font-bold text-gray-500 uppercase tracking-wider">Active Suppliers:</span>
+          <span className="text-sm font-bold text-gray-900">{vendors.length}</span>
         </div>
       </div>
 
       {/* Vendors Table */}
-      <div className="bg-white rounded-3xl border border-slate-100 shadow-sm overflow-hidden">
+      <div className="enterprise-card p-0 overflow-hidden">
         <div className="overflow-x-auto">
           <table className="w-full text-left border-collapse">
             <thead>
-              <tr className="bg-slate-50/50">
-                <th className="px-8 py-5 text-[10px] font-black uppercase tracking-[0.2em] text-slate-400">Vendor Identity</th>
-                <th className="px-8 py-5 text-[10px] font-black uppercase tracking-[0.2em] text-slate-400">Primary Contact</th>
-                <th className="px-8 py-5 text-[10px] font-black uppercase tracking-[0.2em] text-slate-400">Communication</th>
-                <th className="px-8 py-5 text-[10px] font-black uppercase tracking-[0.2em] text-slate-400">Performance</th>
-                <th className="px-8 py-5 text-[10px] font-black uppercase tracking-[0.2em] text-slate-400">Status</th>
-                <th className="px-8 py-5 text-[10px] font-black uppercase tracking-[0.2em] text-slate-400 text-right">Actions</th>
+              <tr className="bg-gray-50/50 border-b border-gray-100">
+                <th className="px-6 py-4 text-[10px] font-bold uppercase tracking-wider text-gray-500">Vendor Identity</th>
+                <th className="px-6 py-4 text-[10px] font-bold uppercase tracking-wider text-gray-500">Primary Contact</th>
+                <th className="px-6 py-4 text-[10px] font-bold uppercase tracking-wider text-gray-500">Communication</th>
+                <th className="px-6 py-4 text-[10px] font-bold uppercase tracking-wider text-gray-500">Performance</th>
+                <th className="px-6 py-4 text-[10px] font-bold uppercase tracking-wider text-gray-500">Status</th>
+                <th className="px-6 py-4 text-[10px] font-bold uppercase tracking-wider text-gray-500 text-right">Actions</th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-slate-50">
+            <tbody className="divide-y divide-gray-100">
               <AnimatePresence mode="popLayout">
                 {filteredVendors.map((vendor) => (
                   <motion.tr 
@@ -201,48 +210,50 @@ export default function VendorsModule() {
                     initial={{ opacity: 0 }}
                     animate={{ opacity: 1 }}
                     exit={{ opacity: 0 }}
-                    className="hover:bg-slate-50/80 transition-all group cursor-pointer"
+                    className="hover:bg-gray-50/80 transition-all group cursor-pointer"
                   >
-                    <td className="px-8 py-5">
+                    <td className="px-6 py-4">
                       <div className="flex items-center gap-4">
-                        <div className="w-12 h-12 rounded-2xl bg-slate-900 flex items-center justify-center text-white font-black text-lg shadow-lg shadow-slate-100">
+                        <div className="w-10 h-10 rounded-lg bg-[#002147] flex items-center justify-center text-white font-bold text-sm shadow-sm">
                           {vendor.name.charAt(0)}
                         </div>
                         <div>
-                          <p className="font-bold text-slate-900 tracking-tight">{vendor.name}</p>
-                          <p className="text-[10px] text-slate-400 font-mono font-bold uppercase tracking-widest mt-0.5">{vendor.id}</p>
+                          <p className="font-bold text-gray-900 tracking-tight text-sm">{vendor.name}</p>
+                          <p className="text-[10px] text-gray-400 font-mono font-bold uppercase tracking-widest mt-0.5">{vendor.id}</p>
                         </div>
                       </div>
                     </td>
-                    <td className="px-8 py-5">
-                      <div className="flex items-center gap-2 text-slate-600">
-                        <User size={14} className="text-slate-400" />
-                        <span className="text-sm font-bold">{vendor.contactPerson}</span>
+                    <td className="px-6 py-4">
+                      <div className="flex items-center gap-2 text-gray-600">
+                        <User size={14} className="text-gray-400" />
+                        <span className="text-sm font-semibold">{vendor.contactPerson}</span>
                       </div>
                     </td>
-                    <td className="px-8 py-5">
+                    <td className="px-6 py-4">
                       <div className="space-y-1.5">
-                        <div className="flex items-center gap-2 text-xs font-medium text-slate-500">
-                          <Mail size={12} className="text-slate-300" />
+                        <div className="flex items-center gap-2 text-xs font-medium text-gray-500">
+                          <Mail size={12} className="text-gray-400" />
                           <span>{vendor.email}</span>
                         </div>
-                        <div className="flex items-center gap-2 text-xs font-medium text-slate-500">
-                          <Phone size={12} className="text-slate-300" />
-                          <span className="text-data">{vendor.phone}</span>
+                        <div className="flex items-center gap-2 text-xs font-medium text-gray-500">
+                          <Phone size={12} className="text-gray-400" />
+                          <span>{vendor.phone}</span>
                         </div>
                       </div>
                     </td>
-                    <td className="px-8 py-5">
-                      {renderStars(vendor.rating)}
+                    <td className="px-6 py-4 flex items-center h-full">
+                      <div className="mt-2.5">
+                        {renderStars(vendor.rating)}
+                      </div>
                     </td>
-                    <td className="px-8 py-5">
+                    <td className="px-6 py-4">
                       <Badge 
                         variant="outline" 
                         className={cn(
-                          "rounded-full px-3 py-1 text-[9px] font-black uppercase tracking-widest border-2",
+                          "rounded-md px-2 py-1 text-[10px] font-bold uppercase tracking-wider border",
                           vendor.status === "active" 
-                            ? "bg-emerald-50 text-emerald-700 border-emerald-100" 
-                            : "bg-slate-50 text-slate-500 border-slate-200"
+                            ? "bg-green-50 text-green-700 border-green-200" 
+                            : "bg-gray-50 text-gray-500 border-gray-200"
                         )}
                       >
                         {vendor.status === "active" ? (
@@ -253,26 +264,26 @@ export default function VendorsModule() {
                         {vendor.status}
                       </Badge>
                     </td>
-                    <td className="px-8 py-5 text-right">
-                      <div className="flex items-center justify-end gap-2 opacity-0 group-hover:opacity-100 transition-all translate-x-2 group-hover:translate-x-0">
-                        <Button variant="ghost" size="icon" className="h-9 w-9 rounded-xl text-slate-400 hover:text-slate-900 hover:bg-slate-100 border border-transparent hover:border-slate-200">
-                          <Eye size={16} />
+                    <td className="px-6 py-4 text-right">
+                      <div className="flex items-center justify-end gap-2 transition-all">
+                        <Button variant="ghost" size="icon" className="h-8 w-8 rounded-lg text-gray-400 hover:text-gray-900 hover:bg-gray-100 border border-transparent hover:border-gray-200">
+                          <Eye size={14} />
                         </Button>
-                        <Button variant="ghost" size="icon" className="h-9 w-9 rounded-xl text-slate-400 hover:text-slate-900 hover:bg-slate-100 border border-transparent hover:border-slate-200">
-                          <Edit2 size={16} />
+                        <Button variant="ghost" size="icon" className="h-8 w-8 rounded-lg text-gray-400 hover:text-gray-900 hover:bg-gray-100 border border-transparent hover:border-gray-200">
+                          <Edit2 size={14} />
                         </Button>
                         <Button 
                           variant="ghost" 
                           size="icon" 
                           onClick={() => toggleStatus(vendor.id)}
                           className={cn(
-                            "h-9 w-9 rounded-xl border border-transparent transition-all",
+                            "h-8 w-8 rounded-lg border border-transparent transition-all",
                             vendor.status === "active" 
-                              ? "text-slate-400 hover:text-red-600 hover:bg-red-50 hover:border-red-100" 
-                              : "text-slate-400 hover:text-emerald-600 hover:bg-emerald-50 hover:border-emerald-100"
+                              ? "text-gray-400 hover:text-red-600 hover:bg-red-50 hover:border-red-100" 
+                              : "text-gray-400 hover:text-green-600 hover:bg-green-50 hover:border-green-100"
                           )}
                         >
-                          <UserX size={16} />
+                          <UserX size={14} />
                         </Button>
                       </div>
                     </td>
@@ -283,11 +294,11 @@ export default function VendorsModule() {
           </table>
           {filteredVendors.length === 0 && (
             <div className="py-20 text-center">
-              <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-slate-50 text-slate-300 mb-4">
-                <Search size={32} />
+              <div className="inline-flex items-center justify-center w-12 h-12 rounded-lg bg-gray-50 text-gray-300 mb-4 border border-gray-100">
+                <Search size={24} />
               </div>
-              <h3 className="text-lg font-medium text-slate-900">No vendors found</h3>
-              <p className="text-slate-500">Try adjusting your search query</p>
+              <h3 className="text-sm font-bold text-gray-900">No vendors found</h3>
+              <p className="text-xs text-gray-500 mt-1">Try adjusting your search query</p>
             </div>
           )}
         </div>
@@ -295,76 +306,87 @@ export default function VendorsModule() {
 
       {/* Add Vendor Modal */}
       <Dialog open={isAddModalOpen} onOpenChange={setIsAddModalOpen}>
-        <DialogContent className="sm:max-w-[550px] rounded-3xl p-0 overflow-hidden border-none shadow-2xl">
-          <div className="bg-slate-900 p-8 text-white">
+        <DialogContent className="sm:max-w-lg rounded-xl p-0 overflow-hidden border-none shadow-2xl">
+          <div className="bg-white p-6 border-b border-gray-100">
             <DialogHeader>
-              <DialogTitle className="text-2xl font-bold tracking-tight">Register Supplier</DialogTitle>
-              <DialogDescription className="text-slate-400 font-medium">
+              <DialogTitle className="text-lg font-bold tracking-tight text-gray-900">Register Supplier</DialogTitle>
+              <DialogDescription className="text-xs text-gray-500 font-medium">
                 Onboard a new vendor to the MPL Steels supply chain network.
               </DialogDescription>
             </DialogHeader>
           </div>
-          <div className="p-8 space-y-6">
-            <div className="grid grid-cols-1 gap-6">
-              <div className="space-y-2">
-                <Label htmlFor="name" className="text-[10px] font-black uppercase tracking-widest text-slate-400">Legal Entity Name</Label>
+          <div className="p-6 space-y-4 bg-gray-50">
+            <div className="grid grid-cols-1 gap-4">
+              <div className="space-y-1.5">
+                <Label htmlFor="name" className="text-xs font-bold text-gray-600 uppercase">Legal Entity Name</Label>
                 <Input 
                   id="name" 
                   placeholder="e.g. Tata Steel Ltd" 
-                  className="rounded-xl border-slate-200 focus:ring-slate-900 h-11"
+                  className="enterprise-input w-full"
                   value={newVendor.name}
                   onChange={(e) => setNewVendor({ ...newVendor, name: e.target.value })}
                 />
               </div>
-              <div className="space-y-2">
-                <Label htmlFor="contact" className="text-[10px] font-black uppercase tracking-widest text-slate-400">Authorized Representative</Label>
+              <div className="space-y-1.5">
+                <Label htmlFor="contact" className="text-xs font-bold text-gray-600 uppercase">Authorized Representative</Label>
                 <Input 
                   id="contact" 
                   placeholder="e.g. Rajesh Kumar" 
-                  className="rounded-xl border-slate-200 focus:ring-slate-900 h-11"
+                  className="enterprise-input w-full"
                   value={newVendor.contactPerson}
                   onChange={(e) => setNewVendor({ ...newVendor, contactPerson: e.target.value })}
                 />
               </div>
-              <div className="grid grid-cols-2 gap-6">
-                <div className="space-y-2">
-                  <Label htmlFor="email" className="text-[10px] font-black uppercase tracking-widest text-slate-400">Business Email</Label>
+              <div className="grid grid-cols-2 gap-4">
+                <div className="space-y-1.5">
+                  <Label htmlFor="email" className="text-xs font-bold text-gray-600 uppercase">Business Email</Label>
                   <Input 
                     id="email" 
                     type="email" 
                     placeholder="rajesh.k@tatasteel.com" 
-                    className="rounded-xl border-slate-200 focus:ring-slate-900 h-11"
+                    className="enterprise-input w-full"
                     value={newVendor.email}
                     onChange={(e) => setNewVendor({ ...newVendor, email: e.target.value })}
                   />
                 </div>
-                <div className="space-y-2">
-                  <Label htmlFor="phone" className="text-[10px] font-black uppercase tracking-widest text-slate-400">Contact Number</Label>
+                <div className="space-y-1.5">
+                  <Label htmlFor="phone" className="text-xs font-bold text-gray-600 uppercase">Contact Number</Label>
                   <Input 
                     id="phone" 
                     placeholder="+91 98765 43210" 
-                    className="rounded-xl border-slate-200 focus:ring-slate-900 h-11"
+                    className="enterprise-input w-full"
                     value={newVendor.phone}
                     onChange={(e) => setNewVendor({ ...newVendor, phone: e.target.value })}
                   />
                 </div>
               </div>
-              <div className="space-y-2">
-                <Label htmlFor="address" className="text-[10px] font-black uppercase tracking-widest text-slate-400">Operational Headquarters</Label>
+              <div className="space-y-1.5">
+                <Label htmlFor="address" className="text-xs font-bold text-gray-600 uppercase">Operational Headquarters</Label>
                 <Input 
                   id="address" 
                   placeholder="e.g. Jamshedpur, Jharkhand" 
-                  className="rounded-xl border-slate-200 focus:ring-slate-900 h-11"
+                  className="enterprise-input w-full"
                   value={newVendor.address}
                   onChange={(e) => setNewVendor({ ...newVendor, address: e.target.value })}
                 />
               </div>
             </div>
           </div>
-          <DialogFooter className="p-8 pt-0 flex gap-3">
-            <Button variant="ghost" onClick={() => setIsAddModalOpen(false)} className="rounded-xl font-bold text-slate-500">Discard</Button>
-            <Button onClick={handleAddVendor} className="bg-slate-900 text-white hover:bg-slate-800 rounded-xl px-8 h-11 font-bold shadow-lg shadow-slate-200">Confirm Registration</Button>
+          <DialogFooter className="p-6 bg-gray-50 flex gap-3 border-t border-gray-100">
+            <button 
+              onClick={() => setIsAddModalOpen(false)} 
+              className="enterprise-button-secondary px-6"
+            >
+              <span className="text-[11px] font-bold uppercase tracking-widest text-slate-500">Discard</span>
+            </button>
+            <button 
+              onClick={handleAddVendor} 
+              className="enterprise-button-primary px-8"
+            >
+              <span className="text-[11px] font-bold uppercase tracking-widest text-white">Confirm Registration</span>
+            </button>
           </DialogFooter>
+
         </DialogContent>
       </Dialog>
     </div>

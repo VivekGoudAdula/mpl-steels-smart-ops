@@ -19,23 +19,23 @@ interface PaymentTabProps {
 export function PaymentTab({ formData, updateFormData }: PaymentTabProps) {
   return (
     <div className="space-y-6 animate-in fade-in duration-500 pb-10">
-      <Card className="border-none shadow-none bg-slate-50/50 rounded-2xl">
-        <CardHeader className="pb-4 pt-6 px-6">
-          <CardTitle className="text-xl font-bold text-slate-900 tracking-tight">Payment Terms</CardTitle>
-        </CardHeader>
-        <CardContent className="grid grid-cols-1 md:grid-cols-2 gap-8 px-6 pb-8">
+      <div className="enterprise-card">
+        <div className="mb-4">
+          <h3 className="text-sm font-bold text-gray-900">Payment Terms</h3>
+        </div>
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
           <FormGroup label="Payment Mode">
             <Select
               value={formData.paymentMode}
               onValueChange={(value) => updateFormData("paymentMode", value)}
             >
-              <SelectTrigger className="h-12 bg-white rounded-xl border-slate-200 focus:ring-4 focus:ring-blue-50 font-medium">
+              <SelectTrigger className="enterprise-input w-full">
                 <SelectValue placeholder="Select Payment Option" />
               </SelectTrigger>
-              <SelectContent className="rounded-xl shadow-2xl">
-                <SelectItem value="credit" className="rounded-lg py-2.5">Credit</SelectItem>
-                <SelectItem value="cash" className="rounded-lg py-2.5">Cash</SelectItem>
-                <SelectItem value="bank_transfer" className="rounded-lg py-2.5">Bank Transfer</SelectItem>
+              <SelectContent>
+                <SelectItem value="credit">Credit</SelectItem>
+                <SelectItem value="cash">Cash</SelectItem>
+                <SelectItem value="bank_transfer">Bank Transfer</SelectItem>
               </SelectContent>
             </Select>
           </FormGroup>
@@ -46,21 +46,21 @@ export function PaymentTab({ formData, updateFormData }: PaymentTabProps) {
                 value={formData.paymentDays}
                 onChange={(e) => updateFormData("paymentDays", parseInt(e.target.value) || 0)}
                 placeholder="e.g. 30"
-                className="h-12 bg-white rounded-xl border-slate-200"
+                className="enterprise-input w-full"
               />
-              <p className="text-[10px] text-slate-400 font-bold uppercase tracking-wider ml-1">Number of days from invoice date</p>
+              <p className="text-[10px] text-gray-400 font-bold uppercase tracking-wider">Number of days from invoice date</p>
             </div>
           </FormGroup>
-        </CardContent>
-      </Card>
+        </div>
+      </div>
     </div>
   );
 }
 
 function FormGroup({ label, children }: { label: string, children: React.ReactNode }) {
   return (
-    <div className="space-y-2.5">
-      <Label className="text-[10px] font-black uppercase tracking-[0.2em] text-slate-400 ml-1 block">
+    <div className="space-y-2">
+      <Label className="text-[10px] font-bold uppercase tracking-widest text-gray-500 block">
         {label}
       </Label>
       {children}

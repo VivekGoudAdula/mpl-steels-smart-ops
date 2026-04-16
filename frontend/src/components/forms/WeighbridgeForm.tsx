@@ -93,35 +93,42 @@ export default function WeighbridgeForm({ isModal, onClose }: WeighbridgeFormPro
           <p className="text-slate-500 mt-1">Capture incoming material weight details for factory entry</p>
         </div>
         <div className="flex items-center gap-3">
-          <Button variant="outline" onClick={onClose} className="h-12 px-6 rounded-xl bg-white border-slate-200 font-bold active:scale-95 transition-all">
-            <X className="w-4 h-4 mr-2" />
-            Cancel
-          </Button>
-          <Button onClick={handleSave} className="h-12 bg-slate-900 text-white hover:bg-slate-800 rounded-xl px-8 font-bold shadow-xl shadow-slate-200 active:scale-95 transition-all">
-            <Save className="w-4 h-4 mr-2" />
-            Save Entry
-          </Button>
+          <button 
+            onClick={onClose} 
+            className="enterprise-button-secondary h-12 px-6 flex items-center gap-2 group"
+          >
+            <X className="w-4 h-4 text-slate-400 group-hover:text-slate-600 transition-colors" />
+            <span className="text-[11px] font-bold uppercase tracking-widest">Cancel</span>
+          </button>
+          <button 
+            onClick={handleSave} 
+            className="enterprise-button-primary h-12 px-8 flex items-center gap-2"
+          >
+            <Save className="w-4 h-4" />
+            <span className="text-[11px] font-bold uppercase tracking-widest text-white">Save Entry</span>
+          </button>
         </div>
+
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 pb-10">
-        <div className="lg:col-span-2 space-y-8">
-          <Card className="border-none shadow-none bg-slate-50/50 rounded-2xl">
-            <CardHeader className="pb-4 pt-6 px-6">
-              <CardTitle className="text-xl font-bold text-slate-900 tracking-tight flex items-center">
-                <FileText className="w-5 h-5 mr-3 text-blue-600" />
+        <div className="lg:col-span-2 space-y-6">
+          <div className="enterprise-card">
+            <div className="mb-4">
+              <h3 className="text-sm font-bold text-gray-900 flex items-center">
+                <FileText className="w-5 h-5 mr-3 text-[#002147]" />
                 PO Linking
-              </CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-6 px-6 pb-8">
+              </h3>
+            </div>
+            <div className="space-y-6">
               <FormGroup label="Select Purchase Order">
                 <Select value={formData.poId} onValueChange={(val) => updateField("poId", val)}>
-                  <SelectTrigger className="bg-white border-slate-200 h-12 rounded-xl focus:ring-4 focus:ring-blue-50 focus:border-blue-400 transition-all font-medium">
+                  <SelectTrigger className="enterprise-input w-full">
                     <SelectValue placeholder="Choose a PO to link" />
                   </SelectTrigger>
-                  <SelectContent className="rounded-xl shadow-2xl border-slate-100 p-1">
+                  <SelectContent>
                     {samplePOs.map((po) => (
-                      <SelectItem key={po.id} value={po.id} className="rounded-lg py-2.5 px-3">
+                      <SelectItem key={po.id} value={po.id}>
                         {po.id} – {po.vendorName}
                       </SelectItem>
                     ))}
@@ -131,36 +138,36 @@ export default function WeighbridgeForm({ isModal, onClose }: WeighbridgeFormPro
 
               {selectedPO && (
                 <div className="grid grid-cols-2 gap-6 pt-2">
-                  <div className="p-5 bg-white rounded-2xl border border-slate-100 shadow-sm transition-all hover:shadow-md animate-in slide-in-from-top-2 duration-300">
-                    <p className="text-[10px] text-slate-400 uppercase font-black tracking-widest mb-1.5">Vendor Name</p>
-                    <p className="font-black text-slate-900 text-sm tracking-tight">{selectedPO.vendorName}</p>
+                  <div className="enterprise-card bg-gray-50 border-gray-200">
+                    <p className="text-[10px] text-gray-500 uppercase font-bold tracking-wider mb-1">Vendor Name</p>
+                    <p className="font-bold text-gray-900 text-sm tracking-tight">{selectedPO.vendorName}</p>
                   </div>
-                  <div className="p-5 bg-white rounded-2xl border border-slate-100 shadow-sm transition-all hover:shadow-md animate-in slide-in-from-top-2 duration-300">
-                    <p className="text-[10px] text-slate-400 uppercase font-black tracking-widest mb-1.5">Material Information</p>
-                    <p className="font-black text-slate-900 text-sm tracking-tight">{selectedPO.materialType}</p>
+                  <div className="enterprise-card bg-gray-50 border-gray-200">
+                    <p className="text-[10px] text-gray-500 uppercase font-bold tracking-wider mb-1">Material Information</p>
+                    <p className="font-bold text-gray-900 text-sm tracking-tight">{selectedPO.materialType}</p>
                   </div>
                 </div>
               )}
-            </CardContent>
-          </Card>
+            </div>
+          </div>
 
-          <Card className="border-none shadow-none bg-slate-50/50 rounded-2xl">
-            <CardHeader className="pb-4 pt-6 px-6">
-              <CardTitle className="text-xl font-bold text-slate-900 tracking-tight flex items-center">
-                <Truck className="w-5 h-5 mr-3 text-slate-600" />
+          <div className="enterprise-card">
+            <div className="mb-4">
+              <h3 className="text-sm font-bold text-gray-900 flex items-center">
+                <Truck className="w-5 h-5 mr-3 text-gray-600" />
                 Vehicle & Personnel
-              </CardTitle>
-            </CardHeader>
-            <CardContent className="grid grid-cols-1 md:grid-cols-3 gap-8 px-6 pb-8">
+              </h3>
+            </div>
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
               <FormGroup label="WB Number">
-                <Input value={formData.wbNumber} readOnly className="h-12 border-none rounded-xl bg-slate-200/50 font-mono font-bold text-slate-600" />
+                <Input value={formData.wbNumber} readOnly className="enterprise-input w-full bg-gray-50 font-mono text-gray-500 border-gray-200" />
               </FormGroup>
               <FormGroup label="Vehicle Number">
                 <Input
                   value={formData.vehicleNumber}
                   onChange={(e) => updateField("vehicleNumber", e.target.value)}
                   placeholder="e.g. MH-12-AB-1234"
-                  className="h-12 border-slate-200 rounded-xl bg-white focus:ring-4 focus:ring-blue-50 focus:border-blue-400 transition-all font-bold placeholder:font-normal"
+                  className="enterprise-input w-full uppercase"
                 />
               </FormGroup>
               <FormGroup label="Driver Name">
@@ -168,30 +175,30 @@ export default function WeighbridgeForm({ isModal, onClose }: WeighbridgeFormPro
                   value={formData.driverName}
                   onChange={(e) => updateField("driverName", e.target.value)}
                   placeholder="Full name"
-                  className="h-12 border-slate-200 rounded-xl bg-white focus:ring-4 focus:ring-blue-50 focus:border-blue-400 transition-all font-medium"
+                  className="enterprise-input w-full"
                 />
               </FormGroup>
-            </CardContent>
-          </Card>
+            </div>
+          </div>
 
-          <Card className="border-none shadow-none bg-slate-50/50 rounded-2xl">
-            <CardHeader className="pb-4 pt-6 px-6">
-              <CardTitle className="text-xl font-bold text-slate-900 tracking-tight flex items-center">
-                <Scale className="w-5 h-5 mr-3 text-slate-600" />
+          <div className="enterprise-card">
+            <div className="mb-4">
+              <h3 className="text-sm font-bold text-gray-900 flex items-center">
+                <Scale className="w-5 h-5 mr-3 text-[#002147]" />
                 Weight Measurement (MT)
-              </CardTitle>
-            </CardHeader>
-            <CardContent className="px-6 pb-8">
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+              </h3>
+            </div>
+            <div>
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
                 <FormGroup label="Gross Weight">
                   <div className="relative group">
                     <Input
                       type="number"
                       value={formData.grossWeight || ""}
                       onChange={(e) => updateField("grossWeight", parseFloat(e.target.value) || 0)}
-                      className="h-12 border-slate-200 rounded-xl bg-white pr-12 text-base font-black focus:ring-4 focus:ring-blue-50 transition-all"
+                      className="enterprise-input w-full pr-10"
                     />
-                    <span className="absolute right-4 top-1/2 -translate-y-1/2 text-[10px] font-black text-slate-300 uppercase tracking-widest group-focus-within:text-blue-500">MT</span>
+                    <span className="absolute right-3 top-1/2 -translate-y-1/2 text-[10px] font-bold text-gray-400 uppercase tracking-widest">MT</span>
                   </div>
                 </FormGroup>
                 <FormGroup label="Tare Weight">
@@ -200,78 +207,76 @@ export default function WeighbridgeForm({ isModal, onClose }: WeighbridgeFormPro
                       type="number"
                       value={formData.tareWeight || ""}
                       onChange={(e) => updateField("tareWeight", parseFloat(e.target.value) || 0)}
-                      className="h-12 border-slate-200 rounded-xl bg-white pr-12 text-base font-black focus:ring-4 focus:ring-blue-50 transition-all"
+                      className="enterprise-input w-full pr-10"
                     />
-                    <span className="absolute right-4 top-1/2 -translate-y-1/2 text-[10px] font-black text-slate-300 uppercase tracking-widest group-focus-within:text-blue-500">MT</span>
+                    <span className="absolute right-3 top-1/2 -translate-y-1/2 text-[10px] font-bold text-gray-400 uppercase tracking-widest">MT</span>
                   </div>
                 </FormGroup>
                 <FormGroup label="Calculated Net Weight">
                   <div className={cn(
-                    "h-12 px-5 flex items-center justify-between rounded-xl border text-lg font-black transition-all duration-300 shadow-sm",
+                    "h-[48px] px-4 flex items-center justify-between rounded bg-white border font-bold transition-all shadow-sm",
                     isNegativeWeight 
                       ? "bg-red-50 border-red-200 text-red-600" 
-                      : "bg-slate-900 border-slate-800 text-white"
+                      : "bg-[#002147] border-[#002147] text-white"
                   )}>
                     <span>{netWeight.toFixed(3)}</span>
-                    <span className="text-[9px] opacity-60 uppercase font-black tracking-[0.2em]">Metric Tons</span>
+                    <span className="text-[9px] opacity-70 uppercase tracking-widest">MT</span>
                   </div>
                 </FormGroup>
               </div>
 
               {isNegativeWeight && (
-                <div className="mt-6 flex items-center gap-3 text-red-600 text-[10px] font-black uppercase tracking-[0.2em] bg-red-50 p-4 rounded-xl border border-red-100 animate-in slide-in-from-top-4 duration-500">
-                  <AlertCircle className="w-5 h-5 flex-shrink-0" />
+                <div className="mt-6 flex items-center gap-3 text-red-700 text-xs font-bold bg-red-50 p-4 rounded border border-red-100">
+                  <AlertCircle className="w-4 h-4" />
                   Critical Error: Gross weight cannot be less than tare weight. Please calibrate sensors.
                 </div>
               )}
-            </CardContent>
-          </Card>
+            </div>
+          </div>
         </div>
 
-        <div className="space-y-8">
-          <Card className="border-none shadow-none bg-slate-50/50 rounded-2xl">
-            <CardHeader className="pb-4 pt-6 px-6">
-              <CardTitle className="text-xl font-bold text-slate-900 tracking-tight flex items-center">
-                <Clock className="w-5 h-5 mr-3 text-slate-600" />
+        <div className="space-y-6">
+          <div className="enterprise-card">
+            <div className="mb-4">
+              <h3 className="text-sm font-bold text-gray-900 flex items-center">
+                <Clock className="w-5 h-5 mr-3 text-gray-600" />
                 Time & Status
-              </CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-6 px-6 pb-8">
+              </h3>
+            </div>
+            <div className="space-y-6">
               <FormGroup label="Entry Date & Time">
                 <Input
                   type="datetime-local"
                   value={formData.entryDateTime}
                   onChange={(e) => updateField("entryDateTime", e.target.value)}
-                  className="h-12 border-slate-200 rounded-xl bg-white px-4 font-medium focus:ring-4 focus:ring-blue-50 transition-all"
+                  className="enterprise-input w-full"
                 />
               </FormGroup>
-              <div className="p-5 bg-white rounded-2xl border border-slate-100 shadow-sm">
-                <p className="text-[10px] text-slate-400 font-black uppercase tracking-widest mb-1.5 ml-1">Calibration Status</p>
-                <div className="flex items-center gap-2.5 text-emerald-600 font-black text-xs uppercase tracking-[0.15em]">
-                  <CheckCircle2 className="w-5 h-5" />
+              <div className="enterprise-card bg-gray-50 border-gray-200">
+                <p className="text-[10px] text-gray-500 font-bold uppercase tracking-wider mb-2">Calibration Status</p>
+                <div className="flex items-center gap-2 text-green-700 font-bold text-xs uppercase tracking-wider">
+                  <CheckCircle2 className="w-4 h-4" />
                   Sensors Calibrated
                 </div>
               </div>
-            </CardContent>
-          </Card>
+            </div>
+          </div>
 
-          <Card className="border-none shadow-none bg-slate-50/50 rounded-2xl">
-            <CardHeader className="pb-4 pt-6 px-6">
-              <CardTitle className="text-xl font-bold text-slate-900 tracking-tight flex items-center">
-                <Upload className="w-5 h-5 mr-3 text-slate-600" />
+          <div className="enterprise-card">
+            <div className="mb-4">
+              <h3 className="text-sm font-bold text-gray-900 flex items-center">
+                <Upload className="w-5 h-5 mr-3 text-gray-600" />
                 Weight Documentation
-              </CardTitle>
-            </CardHeader>
-            <CardContent className="px-6 pb-8">
+              </h3>
+            </div>
+            <div>
               {!file ? (
                 <div 
-                  className="border-2 border-dashed border-slate-200 rounded-2xl p-10 flex flex-col items-center justify-center bg-white hover:border-blue-400 hover:bg-slate-50 transition-all cursor-pointer group"
+                  className="border border-dashed border-gray-300 rounded-xl p-8 flex flex-col items-center justify-center bg-gray-50 hover:border-[#002147] hover:bg-gray-100 transition-all cursor-pointer group"
                   onClick={() => document.getElementById("wb-upload")?.click()}
                 >
-                  <div className="bg-slate-50 p-4 rounded-xl mb-4 group-hover:scale-110 transition-transform">
-                    <Upload className="w-8 h-8 text-slate-300 group-hover:text-blue-500 transition-colors" />
-                  </div>
-                  <p className="text-[10px] text-slate-400 text-center font-black uppercase tracking-[0.15em]">Upload Weight Slip</p>
+                  <Upload className="w-6 h-6 text-gray-400 group-hover:text-[#002147] mb-2" />
+                  <p className="text-xs text-gray-500 text-center font-bold uppercase tracking-wider">Upload Weight Slip</p>
                   <input
                     type="file"
                     id="wb-upload"
@@ -280,26 +285,24 @@ export default function WeighbridgeForm({ isModal, onClose }: WeighbridgeFormPro
                   />
                 </div>
               ) : (
-                <div className="flex items-center p-4 bg-white border border-slate-100 rounded-2xl shadow-sm group hover:border-blue-200 transition-colors">
-                  <div className="bg-slate-900 p-3 rounded-xl mr-4">
-                    <FileText className="w-6 h-6 text-white" />
+                <div className="flex items-center p-3 bg-white border border-gray-200 rounded-xl shadow-sm hover:border-[#002147] transition-colors group">
+                  <div className="bg-[#002147] p-2 rounded mr-3">
+                    <FileText className="w-4 h-4 text-white" />
                   </div>
                   <div className="flex-1 min-w-0">
-                    <p className="text-sm font-bold text-slate-900 truncate">{file.name}</p>
-                    <p className="text-[10px] text-slate-400 font-black uppercase tracking-wider">{(file.size / 1024).toFixed(1)} KB • PDF</p>
+                    <p className="text-xs font-bold text-gray-900 truncate">{file.name}</p>
+                    <p className="text-[10px] text-gray-500 font-medium">{(file.size / 1024).toFixed(1)} KB</p>
                   </div>
-                  <Button
-                    variant="ghost"
-                    size="icon"
+                  <button
                     onClick={() => setFile(null)}
-                    className="h-10 w-10 text-slate-400 hover:text-red-500 hover:bg-red-50 rounded-xl"
+                    className="p-1.5 text-gray-400 hover:text-red-500 rounded"
                   >
-                    <Trash2 className="w-5 h-5" />
-                  </Button>
+                    <Trash2 className="w-4 h-4" />
+                  </button>
                 </div>
               )}
-            </CardContent>
-          </Card>
+            </div>
+          </div>
         </div>
       </div>
     </div>

@@ -71,33 +71,40 @@ export default function PurchaseOrderForm({ isModal, onClose }: PurchaseOrderFor
           <p className="text-slate-500 mt-1">Manage procurement and vendor orders for MPL Steels</p>
         </div>
         <div className="flex items-center gap-3">
-          <Button variant="outline" onClick={onClose} className="bg-white rounded-xl border-slate-200">
-            <X className="w-4 h-4 mr-2" />
-            Cancel
-          </Button>
-          <Button onClick={handleSave} className="bg-slate-900 text-white hover:bg-slate-800 rounded-xl px-6 shadow-lg shadow-slate-200">
-            <Save className="w-4 h-4 mr-2" />
-            Save Purchase Order
-          </Button>
+          <button
+            onClick={onClose}
+            className="enterprise-button-secondary px-6 flex items-center gap-2 group"
+          >
+            <X className="w-4 h-4 text-slate-400 group-hover:text-slate-600 transition-colors" />
+            <span className="text-[11px] font-bold uppercase tracking-widest">Cancel</span>
+          </button>
+          <button
+            onClick={handleSave}
+            className="enterprise-button-primary px-8 flex items-center gap-2"
+          >
+            <Save className="w-4 h-4" />
+            <span className="text-[11px] font-bold uppercase tracking-widest">Save Purchase Order</span>
+          </button>
         </div>
+
       </div>
 
       {/* Tabbed Interface */}
       <Tabs defaultValue="general" className="w-full">
-        <TabsList className="grid w-full grid-cols-4 mb-8 bg-slate-100/50 p-1 rounded-xl">
-          <TabsTrigger value="general" className="rounded-lg data-[state=active]:bg-white data-[state=active]:shadow-sm py-3 text-xs font-bold uppercase tracking-wider">
+        <TabsList className="grid w-full grid-cols-4 mb-8 bg-gray-100 p-1 rounded-xl h-[48px]">
+          <TabsTrigger value="general" className="rounded-lg data-[state=active]:bg-white data-[state=active]:shadow-sm text-xs font-bold uppercase tracking-wider h-full">
             <FileText className="w-4 h-4 mr-2" />
             General
           </TabsTrigger>
-          <TabsTrigger value="items" className="rounded-lg data-[state=active]:bg-white data-[state=active]:shadow-sm py-3 text-xs font-bold uppercase tracking-wider">
+          <TabsTrigger value="items" className="rounded-lg data-[state=active]:bg-white data-[state=active]:shadow-sm text-xs font-bold uppercase tracking-wider h-full">
             <Package className="w-4 h-4 mr-2" />
             Items
           </TabsTrigger>
-          <TabsTrigger value="payment" className="rounded-lg data-[state=active]:bg-white data-[state=active]:shadow-sm py-3 text-xs font-bold uppercase tracking-wider">
+          <TabsTrigger value="payment" className="rounded-lg data-[state=active]:bg-white data-[state=active]:shadow-sm text-xs font-bold uppercase tracking-wider h-full">
             <CreditCard className="w-4 h-4 mr-2" />
             Payment
           </TabsTrigger>
-          <TabsTrigger value="documents" className="rounded-lg data-[state=active]:bg-white data-[state=active]:shadow-sm py-3 text-xs font-bold uppercase tracking-wider">
+          <TabsTrigger value="documents" className="rounded-lg data-[state=active]:bg-white data-[state=active]:shadow-sm text-xs font-bold uppercase tracking-wider h-full">
             <Paperclip className="w-4 h-4 mr-2" />
             Documents
           </TabsTrigger>

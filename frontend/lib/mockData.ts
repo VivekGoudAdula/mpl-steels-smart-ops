@@ -106,85 +106,74 @@ export const documentTypes = [
   { id: "Invoice", name: "Supplier Invoice", color: "bg-purple-100 text-purple-700 border-purple-200" },
 ];
 
-export const sampleDocuments = [
+export interface TransactionDocument {
+  id: string;
+  name: string;
+  type: string;
+  url: string;
+  date: string;
+}
+
+export interface Transaction {
+  txnId: string;
+  poNumber: string;
+  wbNumber: string;
+  grnNumber: string;
+  invoiceNumber: string;
+  date: string;
+  documents: TransactionDocument[];
+}
+
+export const sampleTransactions: Transaction[] = [
   {
-    transactionId: "TXN001",
+    txnId: "TXN001",
     poNumber: "PO123",
     wbNumber: "WB-88231",
     grnNumber: "GRN-1001",
     invoiceNumber: "INV-2024-001",
-    documentType: "PO",
-    fileName: "PO_123_TataSteel.pdf",
-    date: "2024-04-01"
+    date: "2024-04-15",
+    documents: [
+      { id: "D1", name: "PO_123_TataSteel.pdf", type: "PO", url: "/xerox-scan.pdf", date: "2024-04-01" },
+      { id: "D2", name: "WB_88231_Entry.pdf", type: "WB", url: "/xerox-scan.pdf", date: "2024-04-10" },
+      { id: "D3", name: "GRN_1001_Verified.pdf", type: "GRN", url: "/xerox-scan.pdf", date: "2024-04-11" },
+      { id: "D4", name: "INV_2024_001_Tata.pdf", type: "Invoice", url: "/xerox-scan.pdf", date: "2024-04-15" },
+    ]
   },
   {
-    transactionId: "TXN002",
-    poNumber: "PO123",
-    wbNumber: "WB-88231",
-    grnNumber: "GRN-1001",
-    invoiceNumber: "INV-2024-001",
-    documentType: "WB",
-    fileName: "WB_88231_Entry.pdf",
-    date: "2024-04-10"
-  },
-  {
-    transactionId: "TXN003",
-    poNumber: "PO123",
-    wbNumber: "WB-88231",
-    grnNumber: "GRN-1001",
-    invoiceNumber: "INV-2024-001",
-    documentType: "GRN",
-    fileName: "GRN_1001_Verified.pdf",
-    date: "2024-04-11"
-  },
-  {
-    transactionId: "TXN004",
-    poNumber: "PO123",
-    wbNumber: "WB-88231",
-    grnNumber: "GRN-1001",
-    invoiceNumber: "INV-2024-001",
-    documentType: "Invoice",
-    fileName: "INV_2024_001_Tata.pdf",
-    date: "2024-04-15"
-  },
-  {
-    transactionId: "TXN005",
+    txnId: "TXN002",
     poNumber: "PO124",
     wbNumber: "WB-99102",
     grnNumber: "GRN-1002",
     invoiceNumber: "INV-2024-002",
-    documentType: "PO",
-    fileName: "PO_124_JSW.pdf",
-    date: "2024-04-05"
+    date: "2024-04-13",
+    documents: [
+      { id: "D5", name: "PO_124_JSW.pdf", type: "PO", url: "/xerox-scan.pdf", date: "2024-04-05" },
+      { id: "D6", name: "WB_99102_JSW.pdf", type: "WB", url: "/xerox-scan.pdf", date: "2024-04-12" },
+      { id: "D7", name: "GRN_1002_JSW.pdf", type: "GRN", url: "/xerox-scan.pdf", date: "2024-04-13" },
+    ]
   },
   {
-    transactionId: "TXN006",
-    poNumber: "PO124",
-    wbNumber: "WB-99102",
-    grnNumber: "GRN-1002",
-    invoiceNumber: "INV-2024-002",
-    documentType: "WB",
-    fileName: "WB_99102_JSW.pdf",
-    date: "2024-04-12"
-  },
-  {
-    transactionId: "TXN007",
-    poNumber: "PO124",
-    wbNumber: "WB-99102",
-    grnNumber: "GRN-1002",
-    invoiceNumber: "INV-2024-002",
-    documentType: "GRN",
-    fileName: "GRN_1002_JSW.pdf",
-    date: "2024-04-13"
-  },
-  {
-    transactionId: "TXN008",
+    txnId: "TXN003",
     poNumber: "PO125",
     wbNumber: "-",
     grnNumber: "-",
     invoiceNumber: "-",
-    documentType: "PO",
-    fileName: "PO_125_GlobalSteel.pdf",
-    date: "2024-04-08"
+    date: "2024-04-08",
+    documents: [
+      { id: "D8", name: "PO_125_GlobalSteel.pdf", type: "PO", url: "/xerox-scan.pdf", date: "2024-04-08" },
+    ]
   }
 ];
+
+export const sampleDocuments = sampleTransactions.flatMap(t => 
+  t.documents.map(d => ({
+    ...d,
+    transactionId: t.txnId,
+    poNumber: t.poNumber,
+    wbNumber: t.wbNumber,
+    grnNumber: t.grnNumber,
+    invoiceNumber: t.invoiceNumber,
+    fileName: d.name,
+    documentType: d.type,
+  }))
+);

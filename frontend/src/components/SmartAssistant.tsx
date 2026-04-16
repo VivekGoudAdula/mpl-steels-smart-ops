@@ -234,13 +234,13 @@ export default function SmartAssistant() {
   };
 
   const getAgentInfo = (id?: AgentType) => {
-    if (id === "Orchestrator") return { name: "Orchestrator", icon: <Cpu size={16} />, color: "text-slate-900 bg-slate-50 border-slate-100" };
+    if (id === "Orchestrator") return { name: "Orchestrator", icon: <Cpu size={16} />, color: "text-gray-900 bg-gray-100 border-gray-200" };
     const agent = AGENTS.find(a => a.id === id);
     if (agent) {
       // Adjust colors for light theme
       return {
         ...agent,
-        color: agent.color.replace("text-emerald-400", "text-emerald-600").replace("text-orange-400", "text-orange-600").replace("text-yellow-400", "text-yellow-600").replace("text-blue-400", "text-blue-600").replace("text-red-400", "text-red-600")
+        color: agent.color.replace("text-emerald-400", "text-green-600").replace("text-orange-400", "text-orange-600").replace("text-yellow-400", "text-yellow-600").replace("text-blue-400", "text-blue-600").replace("text-red-400", "text-red-600")
       };
     }
     return AGENTS[0];
@@ -248,73 +248,66 @@ export default function SmartAssistant() {
 
   const getStatusColor = (status?: string) => {
     switch (status) {
-      case "completed": return "text-emerald-600 bg-emerald-50 border-emerald-100";
-      case "pending": return "text-amber-600 bg-amber-50 border-amber-100";
+      case "completed": return "text-green-600 bg-green-50 border-green-100";
+      case "pending": return "text-yellow-600 bg-yellow-50 border-yellow-100";
       case "issue": return "text-red-600 bg-red-50 border-red-100";
-      default: return "text-slate-600 bg-slate-50 border-slate-100";
+      default: return "text-gray-600 bg-gray-50 border-gray-200";
     }
   };
 
   return (
-    <div className="flex flex-col h-[calc(100vh-64px)] bg-[#F8F9FA] text-slate-900 font-sans">
+    <div className="flex flex-col h-[calc(100vh-64px)] bg-gray-50 text-gray-900 font-sans">
       {/* Header */}
-      <div className="px-10 py-8 border-b border-slate-200 bg-white/80 backdrop-blur-xl flex justify-between items-center shrink-0 shadow-[0_4px_24px_rgba(0,0,0,0.02)] z-20">
-        <div className="flex items-center gap-6">
-          <div className="w-14 h-14 rounded-2xl bg-slate-900 flex items-center justify-center shadow-xl shadow-slate-200">
-            <Bot className="w-8 h-8 text-white" />
+      <div className="px-6 py-4 border-b border-gray-200 bg-white flex justify-between items-center shrink-0 shadow-sm z-20">
+        <div className="flex items-center gap-4">
+          <div className="w-10 h-10 rounded-xl bg-[#002147] flex items-center justify-center">
+            <Bot className="w-5 h-5 text-white" />
           </div>
           <div>
-            <div className="flex items-center gap-3">
-              <h1 className="text-2xl font-bold tracking-tight text-slate-900">Smart Agent</h1>
-              <Badge variant="secondary" className="bg-slate-100 text-slate-900 border-none text-[9px] font-black px-3 py-1 rounded-full uppercase tracking-widest">Orchestrator v4.0</Badge>
+            <div className="flex items-center gap-2">
+              <h1 className="text-lg font-bold tracking-tight text-gray-900">Smart Agent Node</h1>
+              <Badge variant="secondary" className="bg-gray-100 text-gray-700 border-none text-[9px] font-bold px-2 py-0.5 rounded uppercase tracking-wider">v4.0</Badge>
             </div>
-            <p className="text-slate-400 text-xs font-medium mt-1.5 flex items-center gap-2">
-              <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
-              Autonomous multi-agent operations node active
+            <p className="text-gray-500 text-xs mt-0.5 flex items-center gap-1.5">
+              <span className="w-1.5 h-1.5 rounded-full bg-green-500 animate-pulse"></span>
+              Orchestrator Active
             </p>
           </div>
         </div>
         
-        <div className="flex items-center gap-6">
-          <div className="hidden md:flex items-center gap-3 px-4 py-2 bg-slate-50 rounded-2xl border border-slate-100">
-            <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Active Node:</span>
+        <div className="flex items-center gap-4">
+          <div className="hidden md:flex items-center gap-2 px-3 py-1.5 bg-gray-50 rounded-lg border border-gray-200">
+            <span className="text-[10px] font-bold text-gray-500 uppercase tracking-wider">Route:</span>
             <Select value={selectedAgent} onValueChange={(v: any) => setSelectedAgent(v)}>
-              <SelectTrigger className="h-7 border-none bg-transparent shadow-none focus:ring-0 text-xs font-black text-slate-900 p-0 w-32 uppercase tracking-wider">
+              <SelectTrigger className="h-6 border-none bg-transparent shadow-none focus:ring-0 text-xs font-semibold text-gray-900 p-0 w-28 uppercase">
                 <SelectValue placeholder="Auto Route" />
               </SelectTrigger>
-              <SelectContent className="bg-white border-slate-200 text-slate-900 rounded-2xl">
-                <SelectItem value="Auto" className="font-bold">Auto Route</SelectItem>
+              <SelectContent className="bg-white border-gray-200 text-gray-900 rounded-xl">
+                <SelectItem value="Auto" className="font-semibold text-xs">Auto Route</SelectItem>
                 {AGENTS.map(agent => (
-                  <SelectItem key={agent.id} value={agent.id} className="font-bold">{agent.name}</SelectItem>
+                  <SelectItem key={agent.id} value={agent.id} className="font-semibold text-xs">{agent.name}</SelectItem>
                 ))}
               </SelectContent>
             </Select>
           </div>
-          <Separator orientation="vertical" className="h-10 bg-slate-200" />
+          <Separator orientation="vertical" className="h-6 bg-gray-200" />
           <Button 
             variant="ghost" 
             size="sm" 
             onClick={() => setMessages([messages[0]])} 
-            className="text-slate-400 hover:text-red-600 hover:bg-red-50 rounded-xl font-bold text-xs"
+            className="text-gray-500 hover:text-red-600 hover:bg-red-50 rounded-lg font-semibold text-xs h-8 px-2"
           >
-            <Trash2 className="w-4 h-4 mr-2" />
-            Purge History
+            <Trash2 className="w-3.5 h-3.5 mr-1" />
+            Clear
           </Button>
         </div>
       </div>
 
       <div className="flex-1 flex flex-col overflow-hidden relative">
-        {/* Bonus Text */}
-        <div className="absolute top-6 left-1/2 -translate-x-1/2 z-10">
-          <Badge variant="outline" className="bg-white/80 backdrop-blur-sm border-slate-200 text-slate-400 text-[9px] font-black uppercase tracking-[0.3em] px-6 py-2 rounded-full shadow-sm">
-            Neural Orchestration Active
-          </Badge>
-        </div>
-
         {/* Chat Area */}
         <div 
           ref={scrollRef}
-          className="flex-1 overflow-y-auto p-10 space-y-10 scroll-smooth"
+          className="flex-1 overflow-y-auto p-6 space-y-6 scroll-smooth"
         >
           <AnimatePresence initial={false}>
             {messages.map((msg) => {
@@ -323,44 +316,44 @@ export default function SmartAssistant() {
               return (
                 <motion.div
                   key={msg.id}
-                  initial={{ opacity: 0, y: 20 }}
+                  initial={{ opacity: 0, y: 10 }}
                   animate={{ opacity: 1, y: 0 }}
                   className={cn(
-                    "flex gap-5 max-w-[80%]",
+                    "flex gap-3 max-w-[85%]",
                     msg.role === "user" ? "ml-auto flex-row-reverse" : "mr-auto"
                   )}
                 >
                   <div className={cn(
-                    "w-10 h-10 rounded-2xl flex items-center justify-center shrink-0 shadow-lg",
-                    msg.role === "assistant" ? "bg-white border border-slate-100 text-slate-900" : "bg-slate-900 text-white"
+                    "w-8 h-8 rounded-lg flex items-center justify-center shrink-0 shadow-sm",
+                    msg.role === "assistant" ? "bg-white border border-gray-200 text-gray-700" : "bg-[#002147] text-white"
                   )}>
-                    {msg.role === "assistant" ? agent?.icon : <User size={20} />}
+                    {msg.role === "assistant" ? agent?.icon : <User size={16} />}
                   </div>
                   
-                  <div className="space-y-3">
+                  <div className="space-y-1.5 min-w-[200px]">
                     {msg.role === "assistant" && (
-                      <p className="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em] ml-1">
-                        Node: <span className="text-slate-900">{agent?.name}</span>
+                      <p className="text-[10px] font-bold text-gray-500 uppercase tracking-wider ml-1">
+                        {agent?.name}
                       </p>
                     )}
                     
                     <div className={cn(
-                      "p-6 rounded-[2rem] shadow-sm text-sm font-medium leading-relaxed border transition-all",
+                      "p-4 rounded-xl text-sm font-medium leading-relaxed border shadow-sm",
                       msg.role === "assistant" 
-                        ? "bg-white border-slate-100 text-slate-600 rounded-tl-none" 
-                        : "bg-slate-900 border-slate-800 text-white rounded-tr-none shadow-xl shadow-slate-200"
+                        ? "bg-white border-gray-200 text-gray-700 rounded-tl-none" 
+                        : "bg-[#002147] border-[#002147] text-white rounded-tr-none"
                     )}>
                       <p>{msg.content}</p>
                       
                       {msg.actionResponse && (
-                        <div className="mt-6 space-y-4">
+                        <div className="mt-4 space-y-3">
                           {msg.actionResponse.type === "list" && (
-                            <div className="space-y-3">
-                              <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-3">{msg.actionResponse.title}</p>
+                            <div className="space-y-2">
+                              <p className="text-[10px] font-bold text-gray-400 uppercase tracking-wider mb-2">{msg.actionResponse.title}</p>
                               {msg.actionResponse.items?.map((item, i) => (
-                                <div key={i} className="flex items-center justify-between p-3 rounded-2xl bg-slate-50 border border-slate-100 group hover:bg-white hover:shadow-lg hover:shadow-slate-100 transition-all">
-                                  <span className="font-mono text-xs font-black text-slate-900">{item.label}</span>
-                                  <Badge className={cn("text-[9px] font-black uppercase tracking-widest px-3 py-1 rounded-full border-2", getStatusColor(item.status))}>
+                                <div key={i} className="flex items-center justify-between p-2.5 rounded-lg bg-gray-50 border border-gray-100">
+                                  <span className="font-mono text-xs font-semibold text-gray-800">{item.label}</span>
+                                  <Badge className={cn("text-[9px] font-bold uppercase px-2 py-0.5 rounded border", getStatusColor(item.status))}>
                                     {item.value}
                                   </Badge>
                                 </div>
@@ -369,13 +362,13 @@ export default function SmartAssistant() {
                           )}
 
                           {msg.actionResponse.type === "data-card" && (
-                            <div className="space-y-3">
-                              <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-3">{msg.actionResponse.title}</p>
-                              <div className="grid grid-cols-2 gap-3">
+                            <div className="space-y-2">
+                              <p className="text-[10px] font-bold text-gray-400 uppercase tracking-wider mb-2">{msg.actionResponse.title}</p>
+                              <div className="grid grid-cols-2 gap-2">
                                 {msg.actionResponse.items?.map((item, i) => (
-                                  <div key={i} className="p-4 rounded-2xl bg-slate-50 border border-slate-100 group hover:bg-white hover:shadow-lg hover:shadow-slate-100 transition-all">
-                                    <p className="text-[9px] text-slate-400 font-black uppercase tracking-widest">{item.label}</p>
-                                    <p className="text-sm font-black text-slate-900 mt-1.5 tracking-tight">{item.value}</p>
+                                  <div key={i} className="p-3 rounded-lg bg-gray-50 border border-gray-100">
+                                    <p className="text-[10px] text-gray-500 font-bold uppercase tracking-wider">{item.label}</p>
+                                    <p className="text-xs font-semibold text-gray-900 mt-1">{item.value}</p>
                                   </div>
                                 ))}
                               </div>
@@ -383,27 +376,27 @@ export default function SmartAssistant() {
                           )}
 
                           {msg.actionResponse.type === "status-card" && (
-                            <div className="bg-slate-50 border border-slate-100 rounded-3xl p-6 space-y-6">
+                            <div className="bg-gray-50 border border-gray-200 rounded-xl p-4 space-y-4">
                               <div className="flex justify-between items-center">
-                                <span className="text-xs font-black text-slate-900 uppercase tracking-widest">{msg.actionResponse.data.id}</span>
-                                <Badge variant="outline" className="text-[9px] font-black uppercase tracking-widest border-amber-200 text-amber-600 bg-amber-50 px-3 py-1 rounded-full">
+                                <span className="text-xs font-bold text-gray-900 uppercase">{msg.actionResponse.data.id}</span>
+                                <Badge variant="outline" className="text-[9px] font-bold uppercase border-yellow-200 text-yellow-700 bg-yellow-50 px-2 py-0.5 rounded">
                                   {msg.actionResponse.data.status}
                                 </Badge>
                               </div>
-                              <div className="flex items-center justify-between gap-4">
+                              <div className="flex items-center justify-between gap-2">
                                 {msg.actionResponse.data.steps.map((step: any, i: number) => (
                                   <React.Fragment key={i}>
-                                    <div className="flex flex-col items-center gap-2 flex-1">
+                                    <div className="flex flex-col items-center gap-1.5 flex-1">
                                       <div className={cn(
-                                        "w-8 h-8 rounded-xl flex items-center justify-center border-2 transition-all",
-                                        step.status === "completed" ? "bg-emerald-500 border-emerald-100 text-white shadow-lg shadow-emerald-50" : "bg-white border-slate-200 text-slate-300"
+                                        "w-6 h-6 rounded-md flex items-center justify-center border transition-all",
+                                        step.status === "completed" ? "bg-green-500 border-green-600 text-white" : "bg-white border-gray-300 text-gray-300"
                                       )}>
-                                        {step.status === "completed" ? <Check size={14} /> : <div className="w-1.5 h-1.5 bg-current rounded-full" />}
+                                        {step.status === "completed" ? <Check size={12} /> : <div className="w-1 h-1 bg-current rounded-full" />}
                                       </div>
-                                      <span className="text-[8px] font-black uppercase tracking-widest text-slate-400">{step.name}</span>
+                                      <span className="text-[9px] font-bold uppercase tracking-wider text-gray-500">{step.name}</span>
                                     </div>
                                     {i < msg.actionResponse.data.steps.length - 1 && (
-                                      <div className="h-0.5 bg-slate-200 flex-1 mb-5 rounded-full" />
+                                      <div className="h-px bg-gray-300 flex-1 mb-4" />
                                     )}
                                   </React.Fragment>
                                 ))}
@@ -413,28 +406,28 @@ export default function SmartAssistant() {
 
                           {(msg.actionResponse.type === "success" || msg.actionResponse.type === "alert") && (
                             <div className={cn(
-                              "border-2 rounded-3xl p-6 flex items-start gap-5",
-                              msg.actionResponse.type === "success" ? "bg-emerald-50 border-emerald-100" : "bg-red-50 border-red-100"
+                              "border rounded-xl p-4 flex items-start gap-4",
+                              msg.actionResponse.type === "success" ? "bg-green-50 border-green-200" : "bg-red-50 border-red-200"
                             )}>
                               <div className={cn(
-                                "w-12 h-12 rounded-2xl flex items-center justify-center shrink-0 shadow-lg",
-                                msg.actionResponse.type === "success" ? "bg-emerald-500 text-white shadow-emerald-100" : "bg-red-500 text-white shadow-red-100"
+                                "w-8 h-8 rounded-lg flex items-center justify-center shrink-0 text-white",
+                                msg.actionResponse.type === "success" ? "bg-green-600" : "bg-red-600"
                               )}>
-                                {msg.actionResponse.type === "success" ? <CheckCircle2 size={24} /> : <ShieldAlert size={24} />}
+                                {msg.actionResponse.type === "success" ? <CheckCircle2 size={16} /> : <ShieldAlert size={16} />}
                               </div>
                               <div>
-                                <p className={cn("text-sm font-black uppercase tracking-widest", msg.actionResponse.type === "success" ? "text-emerald-700" : "text-red-700")}>{msg.actionResponse.title}</p>
-                                <p className="text-sm font-medium text-slate-600 mt-1 leading-relaxed">{msg.actionResponse.data.message}</p>
-                                <p className="text-[10px] font-mono font-bold text-slate-400 mt-3 uppercase tracking-widest">Ref: {msg.actionResponse.data.id}</p>
+                                <p className={cn("text-xs font-bold uppercase tracking-wider", msg.actionResponse.type === "success" ? "text-green-800" : "text-red-800")}>{msg.actionResponse.title}</p>
+                                <p className="text-xs font-medium text-gray-700 mt-1 leading-relaxed">{msg.actionResponse.data.message}</p>
+                                <p className="text-[10px] font-mono font-semibold text-gray-500 mt-2 uppercase">Ref: {msg.actionResponse.data.id}</p>
                               </div>
                             </div>
                           )}
                         </div>
                       )}
 
-                      <div className="mt-4 flex items-center justify-between opacity-30">
-                        <span className="text-[10px] font-bold">{msg.timestamp}</span>
-                        {msg.role === "user" && <Check size={12} />}
+                      <div className="mt-2 flex items-center justify-between opacity-50">
+                        <span className="text-[9px] font-semibold">{msg.timestamp}</span>
+                        {msg.role === "user" && <Check size={10} />}
                       </div>
                     </div>
                   </div>
@@ -447,30 +440,30 @@ export default function SmartAssistant() {
             <motion.div
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
-              className="flex gap-5 mr-auto"
+              className="flex gap-3 mr-auto"
             >
-              <div className="w-10 h-10 rounded-2xl bg-white border border-slate-100 flex items-center justify-center shrink-0 shadow-lg text-slate-900">
-                <Cpu size={20} className="animate-spin-slow" />
+              <div className="w-8 h-8 rounded-lg bg-white border border-gray-200 flex items-center justify-center shrink-0 shadow-sm text-gray-700">
+                <Cpu size={16} className="animate-spin-slow" />
               </div>
-              <div className="bg-white border border-slate-100 p-6 rounded-[2rem] rounded-tl-none shadow-sm flex gap-1.5 items-center">
-                <span className="w-2 h-2 bg-slate-900 rounded-full animate-bounce" style={{ animationDelay: '0ms' }}></span>
-                <span className="w-2 h-2 bg-slate-900 rounded-full animate-bounce" style={{ animationDelay: '150ms' }}></span>
-                <span className="w-2 h-2 bg-slate-900 rounded-full animate-bounce" style={{ animationDelay: '300ms' }}></span>
+              <div className="bg-white border border-gray-200 p-4 rounded-xl rounded-tl-none shadow-sm flex gap-1 items-center">
+                <span className="w-1.5 h-1.5 bg-gray-400 rounded-full animate-bounce" style={{ animationDelay: '0ms' }}></span>
+                <span className="w-1.5 h-1.5 bg-gray-400 rounded-full animate-bounce" style={{ animationDelay: '150ms' }}></span>
+                <span className="w-1.5 h-1.5 bg-gray-400 rounded-full animate-bounce" style={{ animationDelay: '300ms' }}></span>
               </div>
             </motion.div>
           )}
         </div>
 
         {/* Input Area */}
-        <div className="p-10 pt-0 shrink-0 bg-gradient-to-t from-[#F8F9FA] via-[#F8F9FA] to-transparent">
-          <div className="max-w-4xl mx-auto space-y-8">
+        <div className="p-6 pt-0 shrink-0 bg-gray-50">
+          <div className="max-w-4xl mx-auto space-y-4">
             {/* Suggestions */}
-            <div className="flex flex-wrap gap-3 justify-center">
+            <div className="flex flex-wrap gap-2 justify-center">
               {COMMAND_SUGGESTIONS.map((s) => (
                 <button
                   key={s}
                   onClick={() => handleSend(s)}
-                  className="px-5 py-2 bg-white border border-slate-100 rounded-full text-[10px] font-black uppercase tracking-[0.1em] text-slate-400 hover:border-slate-900 hover:text-slate-900 transition-all shadow-sm hover:shadow-lg hover:shadow-slate-100"
+                  className="px-3 py-1.5 bg-white border border-gray-200 rounded-lg text-[10px] font-bold uppercase tracking-wider text-gray-500 hover:border-[#002147] hover:text-[#002147] transition-all shadow-sm"
                 >
                   {s}
                 </button>
@@ -478,30 +471,29 @@ export default function SmartAssistant() {
             </div>
 
             <div className="relative group">
-              <div className="absolute -inset-1 bg-slate-900 rounded-[2.5rem] blur opacity-0 group-focus-within:opacity-5 transition duration-700"></div>
-              <div className="relative flex items-center bg-white border border-slate-200 rounded-[2rem] p-3 shadow-2xl shadow-slate-200/50 focus-within:border-slate-900 transition-all">
-                <Button variant="ghost" size="icon" className="text-slate-300 hover:text-slate-900 rounded-2xl w-12 h-12">
-                  <Mic size={24} />
+              <div className="relative flex items-center bg-white border border-gray-300 rounded-xl p-1.5 shadow-sm focus-within:border-[#002147] focus-within:ring-1 focus-within:ring-[#002147] transition-all h-[56px]">
+                <Button variant="ghost" size="icon" className="text-gray-400 hover:text-gray-900 rounded-lg w-10 h-10 ml-1">
+                  <Mic size={18} />
                 </Button>
                 <Input
                   value={input}
                   onChange={(e) => setInput(e.target.value)}
                   onKeyDown={(e) => e.key === "Enter" && handleSend(input)}
-                  placeholder="Command the orchestrator..."
-                  className="border-none focus-visible:ring-0 text-base font-medium bg-transparent text-slate-900 placeholder:text-slate-300 px-4"
+                  placeholder="Ask the orchestrator..."
+                  className="border-none focus-visible:ring-0 text-sm font-medium bg-transparent text-gray-900 placeholder:text-gray-400 px-3 h-full outline-none"
                 />
                 <Button 
                   onClick={() => handleSend(input)}
                   disabled={!input.trim() || isTyping}
-                  className="rounded-2xl w-14 h-14 bg-slate-900 hover:bg-slate-800 shadow-xl shadow-slate-200 transition-all hover:scale-[1.05] disabled:opacity-20"
+                  className="rounded-lg w-10 h-10 bg-[#002147] hover:bg-[#002147]/90 text-white mr-1 transition-all disabled:opacity-50"
                 >
-                  <Send size={22} />
+                  <Send size={16} />
                 </Button>
               </div>
             </div>
-            <div className="flex justify-center gap-8 text-[9px] text-slate-300 font-black uppercase tracking-[0.3em]">
-              <span className="flex items-center gap-2"><Activity size={12} /> Neural Link: Stable</span>
-              <span className="flex items-center gap-2"><CheckCircle2 size={12} /> Multi-Agent Mesh: Online</span>
+            <div className="flex justify-center gap-6 text-[9px] text-gray-400 font-bold uppercase tracking-widest">
+              <span className="flex items-center gap-1.5"><Activity size={10} /> Node: Active</span>
+              <span className="flex items-center gap-1.5"><CheckCircle2 size={10} /> Mesh: Online</span>
             </div>
           </div>
         </div>

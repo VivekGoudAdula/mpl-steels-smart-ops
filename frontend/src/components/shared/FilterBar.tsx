@@ -19,6 +19,8 @@ interface FilterBarProps {
   setSelectedPO?: (po: string) => void;
   selectedType?: string;
   setSelectedType?: (type: string) => void;
+  selectedDateRange?: string;
+  setSelectedDateRange?: (date: string) => void;
   resetFilters: () => void;
   samplePOs?: { id: string }[];
   documentTypes?: { id: string, name: string }[];
@@ -32,91 +34,83 @@ export const FilterBar: React.FC<FilterBarProps> = ({
   setSelectedPO,
   selectedType,
   setSelectedType,
+  selectedDateRange,
+  setSelectedDateRange,
   resetFilters,
   samplePOs = [],
   documentTypes = [],
   placeholder = "Search documents..."
 }) => {
   return (
-    <div className="flex flex-col lg:flex-row gap-4 lg:gap-5 items-center bg-white p-1.5 rounded-2xl border border-slate-100 shadow-sm shadow-slate-200/50 transition-all duration-300">
-      {/* Search Input - dominant width */}
-      <div className="relative flex-[2.5] w-full group">
-        <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 w-5 h-5 transition-all duration-300 group-focus-within:text-blue-500 group-focus-within:scale-110" />
-        <Input
-          placeholder={placeholder}
-          className="h-12 pl-12 pr-12 bg-slate-50 border-transparent rounded-xl focus-visible:ring-2 focus-visible:ring-blue-100 focus-visible:border-blue-400 focus-visible:bg-white transition-all duration-200 text-sm font-medium placeholder:text-slate-400"
-          value={searchQuery}
-          onChange={(e) => setSearchQuery(e.target.value)}
-        />
-        {searchQuery && (
-          <button
-            onClick={() => setSearchQuery("")}
-            className="absolute right-4 top-1/2 -translate-y-1/2 p-1 rounded-full hover:bg-slate-200 text-slate-400 transition-colors animate-in fade-in zoom-in duration-200"
-          >
-            <X className="w-4 h-4" />
-          </button>
-        )}
+    <div className="flex flex-col lg:flex-row gap-6 items-end w-full">
+      {/* Search Input */}
+      <div className="flex-1 w-full flex flex-col">
+        <label className="enterprise-label">Global Transaction Search</label>
+        <div className="relative group">
+          <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-[#94a3b8] w-4 h-4 transition-colors group-focus-within:text-[#0f172a]" />
+          <input
+            placeholder="Search by PO, WB, Invoice..."
+            className="enterprise-input !pl-11 shadow-none"
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+          />
+          {searchQuery && (
+            <button
+              onClick={() => setSearchQuery("")}
+              className="absolute right-4 top-1/2 -translate-y-1/2 p-1.5 rounded-full hover:bg-slate-100 text-slate-400 transition-colors"
+            >
+              <X className="w-3.5 h-3.5" />
+            </button>
+          )}
+        </div>
       </div>
 
       {/* Select Box 1: PO Selection */}
       {setSelectedPO && (
-        <div className="w-full lg:flex-1 min-w-[160px]">
+        <div className="w-full lg:w-48 flex flex-col shrink-0">
+          <label className="enterprise-label">Customer Scope</label>
           <Select value={selectedPO} onValueChange={setSelectedPO}>
-            <SelectTrigger className="h-12 bg-white border-slate-200 rounded-xl hover:border-slate-300 focus:ring-2 focus:ring-blue-100 focus:border-blue-400 transition-all duration-200 px-4 text-sm font-semibold text-slate-700">
-              <SelectValue placeholder="PO Number" />
+            <SelectTrigger className="enterprise-input py-0 px-4 flex justify-between">
+              <SelectValue placeholder="All Customers" />
             </SelectTrigger>
-            <SelectContent className="rounded-xl shadow-2xl border-slate-100 p-1 bg-white ring-1 ring-slate-200/50">
-              <SelectItem value="all" className="rounded-lg py-2.5 px-3 focus:bg-slate-50 focus:text-blue-600 cursor-pointer text-sm font-semibold transition-colors">
-                <div className="flex items-center gap-2">
-                  <span>All POs</span>
-                </div>
-              </SelectItem>
-              {samplePOs.map((po) => (
-                <SelectItem key={po.id} value={po.id} className="rounded-lg py-2.5 px-3 focus:bg-slate-50 focus:text-blue-600 cursor-pointer text-sm font-semibold transition-colors">
-                  <div className="flex items-center gap-2">
-                    <span>{po.id}</span>
-                  </div>
-                </SelectItem>
+            <SelectContent className="rounded-xl shadow-xl border-[#e2e8f0] p-1">
+              <SelectItem value="all" className="rounded-lg py-2.5 px-3 focus:bg-slate-50 text-sm font-semibold">All Time</SelectItem>
+              {samplePOs?.map((po) => (
+                <SelectItem key={po.id} value={po.id} className="rounded-lg py-2.5 px-3 focus:bg-slate-50 text-sm font-semibold">{po.id}</SelectItem>
               ))}
             </SelectContent>
           </Select>
         </div>
       )}
 
-      {/* Select Box 2: Document Types */}
-      {setSelectedType && (
-        <div className="w-full lg:flex-1 min-w-[160px]">
-          <Select value={selectedType} onValueChange={setSelectedType}>
-            <SelectTrigger className="h-12 bg-white border-slate-200 rounded-xl hover:border-slate-300 focus:ring-2 focus:ring-blue-100 focus:border-blue-400 transition-all duration-200 px-4 text-sm font-semibold text-slate-700">
-              <SelectValue placeholder="All Types" />
+      {/* Select Box 3: Date Range */}
+      {setSelectedDateRange && (
+        <div className="w-full lg:w-48 flex flex-col shrink-0">
+          <label className="enterprise-label">Time Period</label>
+          <Select value={selectedDateRange} onValueChange={setSelectedDateRange}>
+            <SelectTrigger className="enterprise-input py-0 px-4 flex justify-between">
+              <SelectValue placeholder="Display Range" />
             </SelectTrigger>
-            <SelectContent className="rounded-xl shadow-2xl border-slate-100 p-1 bg-white ring-1 ring-slate-200/50">
-              <SelectItem value="all" className="rounded-lg py-2.5 px-3 focus:bg-slate-50 focus:text-blue-600 cursor-pointer text-sm font-semibold transition-colors">
-                <div className="flex items-center gap-2">
-                  <span>All Types</span>
-                </div>
-              </SelectItem>
-              {documentTypes.map((type) => (
-                <SelectItem key={type.id} value={type.id} className="rounded-lg py-2.5 px-3 focus:bg-slate-50 focus:text-blue-600 cursor-pointer text-sm font-semibold transition-colors">
-                  <div className="flex items-center gap-2">
-                    <span>{type.name}</span>
-                  </div>
-                </SelectItem>
-              ))}
+            <SelectContent className="rounded-xl shadow-xl border-[#e2e8f0] p-1">
+              <SelectItem value="all" className="rounded-lg py-2.5 px-3 focus:bg-slate-50 text-sm font-semibold">All Time</SelectItem>
+              <SelectItem value="7d" className="rounded-lg py-2.5 px-3 focus:bg-slate-50 text-sm font-semibold">Last 7 Days</SelectItem>
+              <SelectItem value="30d" className="rounded-lg py-2.5 px-3 focus:bg-slate-50 text-sm font-semibold">Last 30 Days</SelectItem>
+              <SelectItem value="90d" className="rounded-lg py-2.5 px-3 focus:bg-slate-50 text-sm font-semibold">Last 90 Days</SelectItem>
             </SelectContent>
           </Select>
         </div>
       )}
 
       {/* Reset Button */}
-      <Button
-        variant="ghost"
+      <button
         onClick={resetFilters}
-        className="h-12 px-6 rounded-xl text-slate-400 hover:text-slate-900 hover:bg-slate-50 active:scale-95 transition-all font-bold text-xs uppercase tracking-widest whitespace-nowrap"
+        className="enterprise-button-secondary px-8 flex items-center gap-2 group shrink-0"
       >
-        <RefreshCcw className="w-3.5 h-3.5 mr-2" />
-        Reset Filters
-      </Button>
+        <RefreshCcw className="w-4 h-4 text-[#94a3b8] group-hover:rotate-180 transition-transform duration-500" />
+        <span>Reset</span>
+      </button>
     </div>
+
   );
 };
+

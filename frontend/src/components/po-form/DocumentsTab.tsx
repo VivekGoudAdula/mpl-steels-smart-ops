@@ -43,30 +43,30 @@ export function DocumentsTab({ files, setFiles }: DocumentsTabProps) {
   };
 
   return (
-    <div className="space-y-8 animate-in fade-in duration-500 pb-10">
-      <Card className="border-none shadow-none bg-slate-50/50 rounded-2xl overflow-hidden">
-        <CardHeader className="pb-4 pt-6 px-6">
-          <CardTitle className="text-xl font-bold text-slate-900 tracking-tight">Attachments & Documents</CardTitle>
-        </CardHeader>
-        <CardContent className="space-y-8 px-6 pb-8">
+    <div className="space-y-6 animate-in fade-in duration-500 pb-10">
+      <div className="enterprise-card">
+        <div className="mb-4">
+          <h3 className="text-sm font-bold text-gray-900">Attachments & Documents</h3>
+        </div>
+        <div className="space-y-6">
           <div
             onDragOver={handleDragOver}
             onDragLeave={handleDragLeave}
             onDrop={handleDrop}
             className={cn(
-              "border-2 border-dashed rounded-2xl p-16 flex flex-col items-center justify-center transition-all duration-300 relative group overflow-hidden",
+              "border-2 border-dashed rounded-xl p-16 flex flex-col items-center justify-center transition-all duration-300 relative group overflow-hidden bg-gray-50",
               isDragging
                 ? "border-blue-500 bg-blue-50/50 shadow-inner"
-                : "border-slate-200 bg-white hover:border-blue-300 hover:bg-slate-50/30"
+                : "border-gray-200 hover:border-[#002147] hover:bg-gray-100/50"
             )}
           >
-            <div className="bg-blue-50 p-6 rounded-2xl mb-5 group-hover:scale-110 transition-transform duration-300 group-hover:bg-blue-100/50">
-              <Upload className="w-10 h-10 text-blue-600" />
+            <div className="bg-white p-4 rounded-xl mb-4 group-hover:scale-110 transition-transform duration-300 shadow-sm border border-gray-100">
+              <Upload className="w-8 h-8 text-gray-400 group-hover:text-[#002147]" />
             </div>
-            <h3 className="text-xl font-bold text-slate-900 mb-2">
+            <h3 className="text-lg font-bold text-gray-900 mb-2">
               Click to upload or drag and drop
             </h3>
-            <p className="text-sm text-slate-500 mb-8 max-w-xs text-center font-medium leading-relaxed">
+            <p className="text-xs text-gray-500 mb-6 max-w-xs text-center font-medium leading-relaxed">
               PDF, DOCX, XLSX or Images are supported. (Maximum file size: 10MB)
             </p>
             <input
@@ -78,50 +78,50 @@ export function DocumentsTab({ files, setFiles }: DocumentsTabProps) {
             />
             <Button
               onClick={() => document.getElementById("file-upload")?.click()}
-              className="h-12 px-8 bg-slate-900 text-white rounded-xl font-bold shadow-xl shadow-slate-200 hover:bg-slate-800 transition-all active:scale-95"
+              className="enterprise-button bg-white border border-gray-200 text-gray-700 hover:bg-gray-50"
             >
-              Select Files from Computer
+              Select Files
             </Button>
           </div>
 
           {files.length > 0 && (
             <div className="space-y-4 animate-in slide-in-from-bottom-4 duration-500">
-              <h4 className="text-[10px] font-black uppercase tracking-[0.2em] text-slate-400 ml-1">
+              <h4 className="text-[10px] font-bold uppercase tracking-widest text-gray-500">
                 Uploaded Files ({files.length})
               </h4>
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-2 gap-4">
                 {files.map((file, index) => (
                   <div
                     key={index}
-                    className="flex items-center p-4 bg-white border border-slate-100 rounded-2xl group hover:border-blue-200 hover:shadow-md transition-all duration-300"
+                    className="flex items-center p-3 bg-white border border-gray-200 rounded-xl group hover:border-[#002147] hover:shadow-sm transition-all duration-300"
                   >
-                    <div className="bg-slate-50 p-3 rounded-xl mr-4 group-hover:bg-blue-50 transition-colors">
-                      <FileText className="w-6 h-6 text-slate-400 group-hover:text-blue-500 transition-colors" />
+                    <div className="bg-[#002147] p-2 rounded mr-3">
+                      <FileText className="w-5 h-5 text-white" />
                     </div>
                     <div className="flex-1 min-w-0">
-                      <p className="text-sm font-bold text-slate-900 truncate">
+                      <p className="text-xs font-bold text-gray-900 truncate">
                         {file.name}
                       </p>
-                      <p className="text-[10px] text-slate-400 font-bold uppercase tracking-wider mt-0.5">
+                      <p className="text-[10px] text-gray-500 font-medium mt-0.5">
                         {(file.size / 1024 / 1024).toFixed(2)} MB • {file.name.split('.').pop()?.toUpperCase()}
                       </p>
                     </div>
-                    <div className="flex items-center gap-2 pr-1">
+                    <div className="flex items-center gap-1 pr-1">
                       <Button
                         variant="ghost"
                         size="icon"
                         onClick={() => setSelectedFile(file)}
-                        className="h-10 w-10 text-slate-400 hover:text-blue-600 hover:bg-blue-50 rounded-xl"
+                        className="h-8 w-8 text-gray-400 hover:text-blue-600 hover:bg-blue-50 rounded"
                       >
-                        <Eye className="w-5 h-5" />
+                        <Eye className="w-4 h-4" />
                       </Button>
                       <Button
                         variant="ghost"
                         size="icon"
                         onClick={() => removeFile(index)}
-                        className="h-10 w-10 text-slate-400 hover:text-red-500 hover:bg-red-50 rounded-xl"
+                        className="h-8 w-8 text-gray-400 hover:text-red-500 hover:bg-red-50 rounded"
                       >
-                        <X className="w-5 h-5" />
+                        <X className="w-4 h-4" />
                       </Button>
                     </div>
                   </div>
@@ -129,8 +129,8 @@ export function DocumentsTab({ files, setFiles }: DocumentsTabProps) {
               </div>
             </div>
           )}
-        </CardContent>
-      </Card>
+        </div>
+      </div>
 
       <DocumentViewer 
         isOpen={!!selectedFile}

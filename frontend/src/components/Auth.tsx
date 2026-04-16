@@ -6,26 +6,16 @@ import {
   User, 
   Eye, 
   EyeOff, 
-  ArrowRight, 
-  ChevronLeft,
+  ArrowRight,
   ShieldCheck,
   Loader2,
   CheckCircle2,
-  X,
-  Cpu
+  LayoutDashboard,
+  Files,
+  Cpu,
+  ArrowRightLeft
 } from "lucide-react";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { 
-  Select, 
-  SelectContent, 
-  SelectItem, 
-  SelectTrigger, 
-  SelectValue 
-} from "@/components/ui/select";
 import { Checkbox } from "@/components/ui/checkbox";
-import { motion, AnimatePresence } from "motion/react";
 import { cn } from "@/lib/utils";
 
 type AuthMode = "login" | "signup";
@@ -43,7 +33,6 @@ export default function Auth({ initialMode = "login", onAuthSuccess, onBack }: A
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  // Form states
   const [formData, setFormData] = useState({
     fullName: "",
     email: "",
@@ -85,130 +74,133 @@ export default function Auth({ initialMode = "login", onAuthSuccess, onBack }: A
   };
 
   return (
-    <div className="min-h-screen bg-[#FBFBF9] text-[#1A1A1A] font-sans selection:bg-[#1A1A1A] selection:text-white flex flex-col">
-      {/* Minimal Header */}
-      <nav className="w-full px-6 py-8">
-        <div className="max-w-7xl mx-auto flex items-center justify-between">
-          <div className="flex items-center gap-2 group cursor-pointer" onClick={onBack}>
-            <div className="w-7 h-7 bg-black rounded flex items-center justify-center">
-              <span className="text-white font-bold text-sm">M</span>
-            </div>
-            <span className="font-bold text-sm tracking-tight uppercase">MPL Steels</span>
-          </div>
-          <button 
-            onClick={onBack}
-            className="text-[10px] font-bold uppercase tracking-[0.2em] text-black/40 hover:text-black transition-colors flex items-center gap-2"
-          >
-            <ChevronLeft size={14} />
-            Return Home
-          </button>
+    <div className="min-h-screen flex bg-white font-sans text-[#0f172a]">
+      {/* Left: Brand Panel */}
+      <div className="hidden lg:flex flex-col w-[40%] bg-[#0f172a] text-white p-16 justify-between sticky top-0 h-screen overflow-hidden">
+        {/* Decorative Grid Background */}
+        <div className="absolute inset-0 opacity-10 pointer-events-none overflow-hidden">
+          <div className="absolute top-0 left-0 w-full h-[1px] bg-white translate-y-12"></div>
+          <div className="absolute top-0 left-0 w-full h-[1px] bg-white translate-y-24"></div>
+          <div className="absolute top-0 left-0 w-full h-[1px] bg-white translate-y-36"></div>
+          <div className="absolute top-0 left-0 w-[1px] h-full bg-white translate-x-12"></div>
+          <div className="absolute top-0 left-0 w-[1px] h-full bg-white translate-x-24"></div>
         </div>
-      </nav>
 
-      <div className="flex-1 flex flex-col justify-center items-center px-6 pb-24">
-        <div className="w-full max-w-md space-y-12">
-          {/* Typographic Header */}
-          <div className="space-y-6 text-center">
-            <div className="flex items-center justify-center gap-3">
-              <span className="w-8 h-[1px] bg-black/20"></span>
-              <span className="text-[10px] font-bold uppercase tracking-[0.3em] text-black/40">
-                {mode === "login" ? "Access Portal" : "Workspace Setup"}
-              </span>
-              <span className="w-8 h-[1px] bg-black/20"></span>
+        <div className="space-y-12 relative z-10">
+          <div className="flex items-center gap-4 cursor-pointer group" onClick={onBack}>
+            <div className="w-10 h-10 bg-blue-600 rounded flex items-center justify-center shadow-lg shadow-blue-900/40 group-hover:scale-105 transition-transform">
+              <span className="text-white font-black text-xl">M</span>
             </div>
-            <h1 className="text-6xl font-heading italic leading-none tracking-tight">
-              {mode === "login" ? "Welcome" : "Initialize"} <br />
-              <span className="text-black/20 not-italic font-sans font-black uppercase tracking-tighter">
-                {mode === "login" ? "Back" : "Account"}
-              </span>
-            </h1>
+            <div>
+              <span className="font-bold text-lg tracking-tight block leading-none text-white">MPL STEELS</span>
+              <span className="text-[10px] text-slate-400 font-bold uppercase tracking-widest mt-1 block">SMART OPS</span>
+            </div>
           </div>
 
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.8, ease: [0.16, 1, 0.3, 1] }}
-            className="bg-white border border-black/5 rounded-[2.5rem] p-10 shadow-2xl shadow-black/5"
-          >
-            <form onSubmit={handleSubmit} className="space-y-8">
-              <AnimatePresence mode="wait">
-                {mode === "signup" && (
-                  <motion.div 
-                    key="signup-fields"
-                    initial={{ opacity: 0, height: 0 }}
-                    animate={{ opacity: 1, height: "auto" }}
-                    exit={{ opacity: 0, height: 0 }}
-                    className="space-y-8"
-                  >
-                    <div className="space-y-3">
-                      <Label className="text-[10px] font-mono text-black/40 uppercase tracking-widest ml-1">Full Name</Label>
-                      <div className="relative group">
-                        <User className="absolute left-4 top-1/2 -translate-y-1/2 text-black/20 group-focus-within:text-black transition-colors" size={18} />
-                        <Input 
-                          placeholder="John Doe"
-                          className="pl-12 h-14 bg-black/[0.02] border-black/5 rounded-2xl focus:bg-white focus:border-black/10 transition-all text-sm font-medium"
-                          value={formData.fullName}
-                          onChange={(e) => setFormData({...formData, fullName: e.target.value})}
-                        />
-                      </div>
-                    </div>
+          <div className="space-y-6 pt-12">
+            <h1 className="text-5xl font-bold tracking-tighter leading-[0.9] text-white">
+              Industrial <br /> Intelligence <br /> Terminal.
+            </h1>
+            <p className="text-slate-400 text-lg max-w-sm font-medium">
+              Enterprise-grade document orchestration and supply chain tracking for modern steel manufacturing.
+            </p>
+          </div>
 
-                    <div className="space-y-3">
-                      <Label className="text-[10px] font-mono text-black/40 uppercase tracking-widest ml-1">Workspace Role</Label>
-                      <Select 
-                        value={formData.role} 
-                        onValueChange={(val: UserRole) => setFormData({...formData, role: val})}
-                      >
-                        <SelectTrigger className="h-14 bg-black/[0.02] border-black/5 rounded-2xl focus:bg-white focus:border-black/10 transition-all px-5 text-sm font-medium">
-                          <SelectValue placeholder="Select your role" />
-                        </SelectTrigger>
-                        <SelectContent className="rounded-2xl border-black/5 shadow-2xl">
-                          <SelectItem value="admin" className="text-sm font-medium py-3">Admin</SelectItem>
-                          <SelectItem value="operations" className="text-sm font-medium py-3">Operations</SelectItem>
-                          <SelectItem value="finance" className="text-sm font-medium py-3">Finance</SelectItem>
-                        </SelectContent>
-                      </Select>
-                    </div>
-                  </motion.div>
-                )}
-              </AnimatePresence>
+          <div className="space-y-8 pt-12">
+            <FeatureBullet 
+              icon={<Files size={20} className="text-blue-500" />} 
+              text="Centralized document orchestration" 
+            />
+            <FeatureBullet 
+              icon={<ArrowRightLeft size={20} className="text-blue-500" />} 
+              text="Three-way matching automation" 
+            />
+            <FeatureBullet 
+              icon={<Cpu size={20} className="text-blue-500" />} 
+              text="Predictive operational insights" 
+            />
+          </div>
+        </div>
 
-              <div className="space-y-3">
-                <Label className="text-[10px] font-mono text-black/40 uppercase tracking-widest ml-1">Email Address</Label>
+        <div className="flex items-center gap-6 text-slate-500 text-[10px] font-black uppercase tracking-[0.2em] border-t border-slate-800 pt-8 mt-auto relative z-10">
+          <div className="flex items-center gap-2">
+            <ShieldCheck size={14} className="text-blue-500" />
+            Terminal Secure
+          </div>
+          <div className="w-1 h-1 rounded-full bg-slate-800"></div>
+          <span>v2.4.0</span>
+        </div>
+      </div>
+
+
+      {/* Right: Form Panel */}
+      <div className="flex-1 flex flex-col items-center justify-center p-8 bg-slate-50 overflow-y-auto">
+        <div className="w-full max-w-[440px] space-y-8">
+          <div className="space-y-2 text-center lg:text-left">
+            <h2 className="text-3xl font-bold tracking-tight">
+              {mode === "login" ? "Welcome Back" : "Create Account"}
+            </h2>
+            <p className="text-slate-500 font-medium">
+              {mode === "login" 
+                ? "Enter your credentials to access the platform" 
+                : "Fill in the details below to initialize your workspace"}
+            </p>
+          </div>
+
+          <div className="enterprise-card p-10 border-slate-200 shadow-xl shadow-slate-200/50">
+            <form onSubmit={handleSubmit} className="space-y-5">
+              {mode === "signup" && (
+                <div className="space-y-2">
+                  <label className="text-xs font-bold uppercase tracking-wider text-slate-500 ml-1">Full Name</label>
+                  <div className="relative group">
+                    <User className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 group-focus-within:text-[#0f172a] transition-colors" size={18} />
+                    <input 
+                      type="text"
+                      placeholder="Enter your name"
+                      className="enterprise-input !pl-12"
+                      value={formData.fullName}
+                      onChange={(e) => setFormData({...formData, fullName: e.target.value})}
+                    />
+                  </div>
+                </div>
+              )}
+
+              <div className="space-y-2">
+                <label className="text-xs font-bold uppercase tracking-wider text-slate-500 ml-1">Work Email</label>
                 <div className="relative group">
-                  <Mail className="absolute left-4 top-1/2 -translate-y-1/2 text-black/20 group-focus-within:text-black transition-colors" size={18} />
-                  <Input 
+                  <Mail className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 group-focus-within:text-[#0f172a] transition-colors" size={18} />
+                  <input 
                     type="email"
                     placeholder="name@company.com"
-                    className="pl-12 h-14 bg-black/[0.02] border-black/5 rounded-2xl focus:bg-white focus:border-black/10 transition-all text-sm font-medium"
+                    className="enterprise-input !pl-12"
                     value={formData.email}
                     onChange={(e) => setFormData({...formData, email: e.target.value})}
                   />
                 </div>
               </div>
 
-              <div className="space-y-3">
-                <div className="flex justify-between items-center">
-                  <Label className="text-[10px] font-mono text-black/40 uppercase tracking-widest ml-1">Password</Label>
+              <div className="space-y-2">
+                <div className="flex justify-between items-center px-1">
+                  <label className="text-xs font-bold uppercase tracking-wider text-slate-500">Password</label>
                   {mode === "login" && (
-                    <button type="button" className="text-[10px] font-bold text-black/40 hover:text-black transition-colors uppercase tracking-widest">
+                    <button type="button" className="text-[11px] font-bold text-blue-600 hover:text-blue-700 transition-colors uppercase tracking-widest">
                       Forgot?
                     </button>
                   )}
                 </div>
                 <div className="relative group">
-                  <Lock className="absolute left-4 top-1/2 -translate-y-1/2 text-black/20 group-focus-within:text-black transition-colors" size={18} />
-                  <Input 
+                  <Lock className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 group-focus-within:text-[#0f172a] transition-colors" size={18} />
+                  <input 
                     type={showPassword ? "text" : "password"}
                     placeholder="••••••••"
-                    className="pl-12 pr-12 h-14 bg-black/[0.02] border-black/5 rounded-2xl focus:bg-white focus:border-black/10 transition-all text-sm font-medium"
+                    className="enterprise-input !pl-12 pr-12"
                     value={formData.password}
                     onChange={(e) => setFormData({...formData, password: e.target.value})}
                   />
                   <button 
                     type="button"
                     onClick={() => setShowPassword(!showPassword)}
-                    className="absolute right-4 top-1/2 -translate-y-1/2 text-black/20 hover:text-black transition-colors"
+                    className="absolute right-4 top-1/2 -translate-y-1/2 text-slate-400 hover:text-[#0f172a] transition-colors"
                   >
                     {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
                   </button>
@@ -216,74 +208,79 @@ export default function Auth({ initialMode = "login", onAuthSuccess, onBack }: A
               </div>
 
               {mode === "signup" && (
-                <motion.div 
-                  initial={{ opacity: 0, height: 0 }}
-                  animate={{ opacity: 1, height: "auto" }}
-                  className="space-y-3"
-                >
-                  <Label className="text-[10px] font-mono text-black/40 uppercase tracking-widest ml-1">Confirm Password</Label>
+                <div className="space-y-2">
+                  <label className="text-xs font-bold uppercase tracking-wider text-slate-500 ml-1">Confirm Password</label>
                   <div className="relative group">
-                    <Lock className="absolute left-4 top-1/2 -translate-y-1/2 text-black/20 group-focus-within:text-black transition-colors" size={18} />
-                    <Input 
+                    <Lock className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 group-focus-within:text-[#0f172a] transition-colors" size={18} />
+                    <input 
                       type="password"
                       placeholder="••••••••"
-                      className="pl-12 h-14 bg-black/[0.02] border-black/5 rounded-2xl focus:bg-white focus:border-black/10 transition-all text-sm font-medium"
+                      className="enterprise-input !pl-12"
                       value={formData.confirmPassword}
                       onChange={(e) => setFormData({...formData, confirmPassword: e.target.value})}
                     />
                   </div>
-                </motion.div>
+                </div>
+              )}
+
+              {mode === "login" && (
+                <div className="flex items-center gap-2 px-1">
+                  <Checkbox id="remember" className="border-slate-300 data-[state=checked]:bg-[#0f172a]" />
+                  <label htmlFor="remember" className="text-sm font-semibold text-slate-600 cursor-pointer">Remember me</label>
+                </div>
               )}
 
               {error && (
-                <div className="p-4 rounded-2xl bg-black text-white text-[10px] font-mono uppercase tracking-widest flex items-center gap-3 animate-in fade-in slide-in-from-top-1">
-                  <X size={14} className="text-white/40" />
+                <div className="p-3 bg-red-50 border border-red-100 text-red-600 text-[11px] font-bold uppercase tracking-widest rounded-lg flex items-center gap-2">
+                  <div className="w-1.5 h-1.5 rounded-full bg-red-600"></div>
                   {error}
                 </div>
               )}
 
-              <Button 
-                type="submit" 
-                disabled={isLoading}
-                className="w-full h-16 bg-black hover:bg-black/80 text-white font-bold rounded-full text-[10px] uppercase tracking-[0.2em] transition-all active:scale-[0.98] shadow-2xl shadow-black/10"
-              >
-                {isLoading ? (
-                  <Loader2 className="animate-spin" size={20} />
-                ) : (
-                  <div className="flex items-center justify-center gap-2">
-                    <span>{mode === "login" ? "Initialize Session" : "Create Workspace"}</span>
-                    <ArrowRight size={16} />
-                  </div>
-                )}
-              </Button>
-            </form>
-
-            <div className="mt-10 pt-10 border-t border-black/5 text-center">
-              <p className="text-[10px] font-bold text-black/40 uppercase tracking-widest">
-                {mode === "login" ? "New to the platform?" : "Already have access?"}
+              <div className="space-y-4 pt-2">
                 <button 
-                  onClick={() => setMode(mode === "login" ? "signup" : "login")}
-                  className="ml-2 text-black hover:underline underline-offset-4 decoration-black/20 transition-all"
+                  type="submit" 
+                  disabled={isLoading}
+                  className="enterprise-button-primary w-full shadow-lg shadow-slate-900/10"
                 >
-                  {mode === "login" ? "Create Account" : "Sign In"}
+                  {isLoading ? (
+                    <Loader2 className="animate-spin" size={20} />
+                  ) : (
+                    <div className="flex items-center justify-center gap-2">
+                      <span>{mode === "login" ? "Sign In" : "Create Account"}</span>
+                      <ArrowRight size={18} className="opacity-60" />
+                    </div>
+                  )}
                 </button>
-              </p>
-            </div>
-          </motion.div>
 
-          {/* System Footer */}
-          <div className="flex flex-col items-center gap-6">
-            <div className="flex items-center gap-8 opacity-20 grayscale">
-              <ShieldCheck size={20} />
-              <Lock size={20} />
-              <Cpu size={20} />
-            </div>
-            <p className="text-[10px] font-mono text-black/20 uppercase tracking-[0.3em]">
-              Encrypted Industrial Gateway v2.0
-            </p>
+                <button 
+                  type="button"
+                  onClick={() => setMode(mode === "login" ? "signup" : "login")}
+                  className="enterprise-button-secondary w-full"
+                >
+                  {mode === "login" ? "Create New Workspace" : "Return to Login"}
+                </button>
+              </div>
+            </form>
           </div>
+
+          <p className="text-center text-[10px] font-bold text-slate-400 uppercase tracking-[0.2em] pt-4">
+            © 2026 MPL STEELS • SECURE INDUSTRIAL PLATFORM
+          </p>
         </div>
       </div>
     </div>
   );
 }
+
+function FeatureBullet({ icon, text }: { icon: React.ReactNode, text: string }) {
+  return (
+    <div className="flex items-center gap-4 group">
+      <div className="w-10 h-10 rounded-xl bg-white/5 flex items-center justify-center border border-white/10 group-hover:bg-white/10 transition-all">
+        {icon}
+      </div>
+      <span className="font-semibold text-blue-100/80">{text}</span>
+    </div>
+  );
+}
+

@@ -137,23 +137,23 @@ export default function AIDocumentAssistant() {
   return (
     <div className="flex flex-col h-[calc(100vh-64px)] bg-[#F8F9FA] text-slate-900 font-sans">
       {/* Header */}
-      <div className="px-10 py-8 border-b border-slate-200 bg-white/80 backdrop-blur-xl flex justify-between items-center shrink-0 shadow-[0_4px_24px_rgba(0,0,0,0.02)] z-20">
-        <div className="flex items-center gap-6">
-          <div className="w-14 h-14 rounded-2xl bg-slate-900 flex items-center justify-center shadow-xl shadow-slate-200">
-            <Sparkles className="w-8 h-8 text-white" />
+      <div className="px-8 py-4 border-b border-gray-200 bg-white flex justify-between items-center shrink-0 z-20">
+        <div className="flex items-center gap-4">
+          <div className="w-10 h-10 rounded bg-[#002147] flex items-center justify-center shadow-sm">
+            <Sparkles className="w-5 h-5 text-white" />
           </div>
           <div>
-            <div className="flex items-center gap-3">
-              <h1 className="text-2xl font-bold tracking-tight text-slate-900">Document Assistant</h1>
-              <Badge variant="secondary" className="bg-slate-100 text-slate-900 border-none text-[9px] font-black px-3 py-1 rounded-full uppercase tracking-widest">AI Core v2.4</Badge>
+            <div className="flex items-center gap-2">
+              <h1 className="text-lg font-bold text-gray-900">Document Assistant</h1>
+              <Badge variant="secondary" className="bg-blue-50 text-blue-700 border border-blue-200 text-[9px] font-bold px-2 py-0.5 rounded uppercase tracking-widest">AI Core v2.4</Badge>
             </div>
-            <p className="text-slate-400 text-xs font-medium mt-1.5 flex items-center gap-2">
-              <span className="w-2 h-2 rounded-full bg-blue-500 animate-pulse"></span>
+            <p className="text-gray-500 text-xs font-medium flex items-center gap-2">
+              <span className="w-1.5 h-1.5 rounded-full bg-green-500"></span>
               Neural semantic search active across operational data
             </p>
           </div>
         </div>
-        <Button variant="ghost" size="sm" onClick={clearChat} className="text-slate-400 hover:text-red-600 rounded-xl font-bold text-xs">
+        <Button variant="ghost" size="sm" onClick={clearChat} className="text-gray-500 hover:text-red-600 rounded text-xs font-bold enterprise-button bg-white border border-gray-200 hover:bg-gray-50">
           <Trash2 className="w-4 h-4 mr-2" />
           Purge Session
         </Button>
@@ -161,61 +161,61 @@ export default function AIDocumentAssistant() {
 
       <div className="flex-1 flex overflow-hidden">
         {/* Chat Area */}
-        <div className="flex-1 flex flex-col relative">
+        <div className="flex-1 flex flex-col relative bg-white">
           <div 
             ref={scrollRef}
-            className="flex-1 overflow-y-auto p-10 space-y-10 scroll-smooth"
+            className="flex-1 overflow-y-auto p-8 space-y-6 scroll-smooth"
           >
             <AnimatePresence initial={false}>
               {messages.map((msg) => (
                 <motion.div
                   key={msg.id}
-                  initial={{ opacity: 0, y: 20 }}
+                  initial={{ opacity: 0, y: 10 }}
                   animate={{ opacity: 1, y: 0 }}
                   className={cn(
-                    "flex gap-5 max-w-[80%]",
+                    "flex gap-4 max-w-[85%]",
                     msg.role === "assistant" ? "mr-auto" : "ml-auto flex-row-reverse"
                   )}
                 >
                   <div className={cn(
-                    "w-10 h-10 rounded-2xl flex items-center justify-center shrink-0 shadow-lg",
-                    msg.role === "assistant" ? "bg-slate-900 text-white" : "bg-white border border-slate-100 text-slate-900"
+                    "w-8 h-8 rounded flex items-center justify-center shrink-0 mt-1",
+                    msg.role === "assistant" ? "bg-[#002147] text-white" : "bg-gray-100 border border-gray-200 text-gray-700"
                   )}>
-                    {msg.role === "assistant" ? <Bot size={20} /> : <User size={20} />}
+                    {msg.role === "assistant" ? <Bot size={16} /> : <User size={16} />}
                   </div>
                   
-                  <div className="space-y-3">
+                  <div className="space-y-2">
                     <div className={cn(
-                      "p-6 rounded-[2rem] shadow-sm text-sm font-medium leading-relaxed border transition-all",
+                      "p-4 rounded shadow-sm text-sm font-medium leading-relaxed border transition-all",
                       msg.role === "assistant" 
-                        ? "bg-white border-slate-100 text-slate-600 rounded-tl-none" 
-                        : "bg-slate-900 border-slate-800 text-white rounded-tr-none shadow-xl shadow-slate-200"
+                        ? "bg-gray-50 border-gray-200 text-gray-700" 
+                        : "bg-[#002147] border-[#001733] text-white"
                     )}>
-                      <div dangerouslySetInnerHTML={{ __html: msg.content.replace(/\*\*(.*?)\*\*/g, '<strong class="font-black text-slate-900">$1</strong>') }} />
+                      <div dangerouslySetInnerHTML={{ __html: msg.content.replace(/\*\*(.*?)\*\*/g, '<strong class="font-bold text-current">$1</strong>') }} />
                       
                       {msg.role === "assistant" && (
-                        <div className="mt-6 pt-4 border-t border-slate-50 flex items-center justify-between">
-                          <span className="text-[10px] font-bold text-slate-400 flex items-center gap-2">
-                            <Clock size={12} />
+                        <div className="mt-4 pt-3 border-t border-gray-200/50 flex items-center justify-between">
+                          <span className="text-[10px] font-bold text-gray-400 flex items-center gap-1.5">
+                            <Clock size={10} />
                             {msg.timestamp}
                           </span>
-                          <div className="flex gap-2">
+                          <div className="flex gap-1">
                             <Button 
                               variant="ghost" 
                               size="icon" 
-                              className="h-8 w-8 text-slate-300 hover:text-slate-900 rounded-lg"
+                              className="h-6 w-6 text-gray-400 hover:text-gray-900 rounded"
                               onClick={() => copyToClipboard(msg.content)}
                             >
-                              <Copy size={14} />
+                              <Copy size={12} />
                             </Button>
                             {msg.relatedDoc && (
                               <Button 
                                 variant="ghost" 
                                 size="icon" 
-                                className="h-8 w-8 text-slate-300 hover:text-slate-900 rounded-lg"
+                                className="h-6 w-6 text-gray-400 hover:text-gray-900 rounded"
                                 title="View related document"
                               >
-                                <ExternalLink size={14} />
+                                <ExternalLink size={12} />
                               </Button>
                             )}
                           </div>
@@ -223,10 +223,10 @@ export default function AIDocumentAssistant() {
                       )}
                       
                       {msg.role === "user" && (
-                        <div className="mt-4 flex justify-end">
-                          <span className="text-[10px] font-bold opacity-30 flex items-center gap-2">
+                        <div className="mt-2 flex justify-end">
+                          <span className="text-[10px] font-bold opacity-50 flex items-center gap-1.5 text-white">
                             {msg.timestamp}
-                            <Check size={12} />
+                            <Check size={10} />
                           </span>
                         </div>
                       )}
@@ -235,20 +235,20 @@ export default function AIDocumentAssistant() {
                     {/* Related Document Context Card */}
                     {msg.relatedDoc && (
                       <motion.div
-                        initial={{ opacity: 0, scale: 0.95 }}
-                        animate={{ opacity: 1, scale: 1 }}
-                        className="bg-white border border-slate-100 rounded-3xl p-5 flex items-center justify-between group cursor-pointer hover:border-slate-900 hover:shadow-xl hover:shadow-slate-100 transition-all"
+                        initial={{ opacity: 0, y: -5 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        className="bg-white border border-gray-200 rounded p-3 flex items-center justify-between group cursor-pointer hover:border-[#002147] transition-all"
                       >
-                        <div className="flex items-center gap-4">
-                          <div className="bg-slate-50 p-3 rounded-2xl border border-slate-100 shadow-sm group-hover:bg-slate-900 group-hover:text-white transition-all">
-                            <FileText size={20} className="group-hover:text-white transition-all" />
+                        <div className="flex items-center gap-3">
+                          <div className="bg-blue-50 p-2 rounded border border-blue-100 group-hover:bg-[#002147] group-hover:text-white transition-colors">
+                            <FileText size={16} className="text-blue-600 group-hover:text-white transition-colors" />
                           </div>
                           <div>
-                            <p className="text-[9px] font-black text-slate-400 uppercase tracking-[0.2em]">Context Artifact</p>
-                            <p className="text-sm font-black text-slate-900 mt-1">{msg.relatedDoc.name}</p>
+                            <p className="text-[9px] font-bold text-gray-500 uppercase tracking-widest">Context Reference</p>
+                            <p className="text-sm font-bold text-gray-900 mt-0.5">{msg.relatedDoc.name}</p>
                           </div>
                         </div>
-                        <ChevronRight size={16} className="text-slate-300 group-hover:text-slate-900 group-hover:translate-x-1 transition-all" />
+                        <ChevronRight size={14} className="text-gray-400 group-hover:text-[#002147]" />
                       </motion.div>
                     )}
                   </div>
@@ -260,31 +260,31 @@ export default function AIDocumentAssistant() {
               <motion.div
                 initial={{ opacity: 0 }}
                 animate={{ opacity: 1 }}
-                className="flex gap-5 mr-auto"
+                className="flex gap-4 mr-auto"
               >
-                <div className="w-10 h-10 rounded-2xl bg-slate-900 flex items-center justify-center shrink-0 shadow-lg text-white">
-                  <Bot size={20} />
+                <div className="w-8 h-8 rounded bg-[#002147] flex items-center justify-center shrink-0 text-white mt-1">
+                  <Bot size={16} />
                 </div>
-                <div className="bg-white border border-slate-100 p-6 rounded-[2rem] rounded-tl-none shadow-sm flex gap-1.5 items-center">
-                  <span className="w-2 h-2 bg-slate-900 rounded-full animate-bounce" style={{ animationDelay: '0ms' }}></span>
-                  <span className="w-2 h-2 bg-slate-900 rounded-full animate-bounce" style={{ animationDelay: '150ms' }}></span>
-                  <span className="w-2 h-2 bg-slate-900 rounded-full animate-bounce" style={{ animationDelay: '300ms' }}></span>
+                <div className="bg-gray-50 border border-gray-200 p-4 rounded flex gap-1.5 items-center">
+                  <span className="w-1.5 h-1.5 bg-[#002147] rounded-full animate-bounce" style={{ animationDelay: '0ms' }}></span>
+                  <span className="w-1.5 h-1.5 bg-[#002147] rounded-full animate-bounce" style={{ animationDelay: '150ms' }}></span>
+                  <span className="w-1.5 h-1.5 bg-[#002147] rounded-full animate-bounce" style={{ animationDelay: '300ms' }}></span>
                 </div>
               </motion.div>
             )}
           </div>
 
           {/* Input Area */}
-          <div className="p-10 pt-0 shrink-0 bg-gradient-to-t from-[#F8F9FA] via-[#F8F9FA] to-transparent">
-            <div className="max-w-4xl mx-auto space-y-8">
+          <div className="p-6 pt-2 bg-white border-t border-gray-100 shrink-0">
+            <div className="max-w-4xl mx-auto space-y-4">
               {/* Suggestions */}
               {messages.length < 3 && (
-                <div className="flex flex-wrap gap-3 justify-center">
+                <div className="flex flex-wrap gap-2 justify-center">
                   {SUGGESTIONS.map((s) => (
                     <button
                       key={s}
                       onClick={() => handleSend(s)}
-                      className="px-5 py-2 bg-white border border-slate-100 rounded-full text-[10px] font-black uppercase tracking-[0.1em] text-slate-400 hover:border-slate-900 hover:text-slate-900 transition-all shadow-sm hover:shadow-lg hover:shadow-slate-100"
+                      className="px-3 py-1.5 bg-gray-50 border border-gray-200 rounded text-[10px] font-bold uppercase tracking-wider text-gray-600 hover:border-[#002147] hover:text-[#002147] transition-all"
                     >
                       {s}
                     </button>
@@ -292,29 +292,27 @@ export default function AIDocumentAssistant() {
                 </div>
               )}
 
-              <div className="relative group">
-                <div className="absolute -inset-1 bg-slate-900 rounded-[2.5rem] blur opacity-0 group-focus-within:opacity-5 transition duration-700"></div>
-                <div className="relative flex items-center bg-white border border-slate-200 rounded-[2rem] p-3 shadow-2xl shadow-slate-200/50 focus-within:border-slate-900 transition-all">
-                  <div className="pl-4 text-slate-300">
-                    <MessageSquare size={24} />
-                  </div>
-                  <Input
-                    value={input}
-                    onChange={(e) => setInput(e.target.value)}
-                    onKeyDown={(e) => e.key === "Enter" && handleSend(input)}
-                    placeholder="Inquire about PO, GRN, or financial artifacts..."
-                    className="border-none focus-visible:ring-0 text-base font-medium bg-transparent text-slate-900 placeholder:text-slate-300 px-4"
-                  />
-                  <Button 
-                    onClick={() => handleSend(input)}
-                    disabled={!input.trim() || isTyping}
-                    className="rounded-2xl w-14 h-14 bg-slate-900 hover:bg-slate-800 shadow-xl shadow-slate-200 transition-all hover:scale-[1.05] disabled:opacity-20"
-                  >
-                    <Send size={22} />
-                  </Button>
+              <div className="relative flex items-center bg-white border border-gray-300 rounded p-1 shadow-sm focus-within:border-[#002147] focus-within:ring-1 focus-within:ring-[#002147]/20 transition-all">
+                <div className="pl-3 pr-2 text-gray-400">
+                  <MessageSquare size={18} />
                 </div>
+                <Input
+                  value={input}
+                  onChange={(e) => setInput(e.target.value)}
+                  onKeyDown={(e) => e.key === "Enter" && handleSend(input)}
+                  placeholder="Inquire about PO, GRN, or financial artifacts..."
+                  className="border-none focus-visible:ring-0 text-sm font-medium bg-transparent text-gray-900 placeholder:text-gray-400 h-10 w-full"
+                />
+                <Button 
+                  onClick={() => handleSend(input)}
+                  disabled={!input.trim() || isTyping}
+                  className="rounded w-10 h-10 bg-[#002147] hover:bg-[#001733] text-white shrink-0 ml-1 disabled:opacity-50"
+                  size="icon"
+                >
+                  <Send size={16} />
+                </Button>
               </div>
-              <p className="text-[9px] text-center text-slate-300 uppercase tracking-[0.3em] font-black">
+              <p className="text-[9px] text-center text-gray-400 uppercase tracking-widest font-bold">
                 Neural Core v2.4 • Industrial Grade Intelligence
               </p>
             </div>
@@ -322,58 +320,58 @@ export default function AIDocumentAssistant() {
         </div>
 
         {/* Sidebar Context */}
-        <div className="hidden xl:flex w-96 border-l border-slate-200 bg-white flex-col p-10 space-y-10 shadow-[-4px_0_24px_rgba(0,0,0,0.02)]">
-          <h2 className="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em] flex items-center gap-3">
-            <div className="w-1.5 h-1.5 rounded-full bg-slate-900"></div>
+        <div className="hidden xl:flex w-80 border-l border-gray-200 bg-gray-50 flex-col p-6 space-y-6">
+          <h2 className="text-[10px] font-bold text-gray-500 uppercase tracking-widest flex items-center gap-2">
+            <div className="w-1.5 h-1.5 rounded-full bg-[#002147]"></div>
             Active Context Node
           </h2>
           
-          <div className="space-y-6">
-            <div className="p-6 bg-slate-50/50 rounded-[2rem] border border-slate-100 space-y-5 group hover:bg-white hover:shadow-xl hover:shadow-slate-100 transition-all">
+          <div className="space-y-4">
+            <div className="p-4 bg-white rounded border border-gray-200 space-y-4 group hover:border-[#002147] transition-colors shadow-sm">
               <div className="flex items-center justify-between">
-                <Badge className="bg-slate-900 text-white border-none text-[9px] font-black px-3 py-1 rounded-full uppercase tracking-widest">PO-123</Badge>
-                <span className="text-[9px] text-slate-400 font-black uppercase tracking-widest">Active</span>
+                <Badge className="bg-[#002147] text-white border-none text-[9px] font-bold px-2 py-0.5 rounded uppercase tracking-widest">PO-123</Badge>
+                <span className="text-[9px] text-gray-400 font-bold uppercase tracking-widest">Active</span>
               </div>
-              <p className="text-lg font-black text-slate-900 tracking-tight">Tata Steel Ltd</p>
-              <div className="space-y-3">
+              <p className="text-base font-bold text-gray-900">Tata Steel Ltd</p>
+              <div className="space-y-2 pt-2 border-t border-gray-100">
                 <div className="flex justify-between items-center">
-                  <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Material</span>
-                  <span className="text-xs font-black text-slate-900">Steel Coils</span>
+                  <span className="text-[10px] font-bold text-gray-500 uppercase tracking-widest">Material</span>
+                  <span className="text-xs font-bold text-gray-900">Steel Coils</span>
                 </div>
                 <div className="flex justify-between items-center">
-                  <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Valuation</span>
-                  <span className="text-xs font-black text-slate-900 text-data">₹2,45,000</span>
+                  <span className="text-[10px] font-bold text-gray-500 uppercase tracking-widest">Valuation</span>
+                  <span className="text-xs font-bold text-gray-900">₹2,45,000</span>
                 </div>
               </div>
             </div>
 
-            <div className="p-6 bg-slate-50/50 rounded-[2rem] border border-slate-100 space-y-5 group hover:bg-white hover:shadow-xl hover:shadow-slate-100 transition-all">
+            <div className="p-4 bg-white rounded border border-gray-200 space-y-4 group hover:border-[#002147] transition-colors shadow-sm">
               <div className="flex items-center justify-between">
-                <Badge className="bg-emerald-500 text-white border-none text-[9px] font-black px-3 py-1 rounded-full uppercase tracking-widest">GRN-992</Badge>
-                <span className="text-[9px] text-slate-400 font-black uppercase tracking-widest">Verified</span>
+                <Badge className="bg-green-600 text-white border-none text-[9px] font-bold px-2 py-0.5 rounded uppercase tracking-widest">GRN-992</Badge>
+                <span className="text-[9px] text-gray-400 font-bold uppercase tracking-widest">Verified</span>
               </div>
-              <p className="text-lg font-black text-slate-900 tracking-tight">JSW Steels</p>
-              <div className="space-y-3">
+              <p className="text-base font-bold text-gray-900">JSW Steels</p>
+              <div className="space-y-2 pt-2 border-t border-gray-100">
                 <div className="flex justify-between items-center">
-                  <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Quantity</span>
-                  <span className="text-xs font-black text-slate-900 text-data">12.5 Tons</span>
+                  <span className="text-[10px] font-bold text-gray-500 uppercase tracking-widest">Quantity</span>
+                  <span className="text-xs font-bold text-gray-900">12.5 Tons</span>
                 </div>
                 <div className="flex justify-between items-center">
-                  <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Status</span>
-                  <span className="text-[10px] font-black text-emerald-600 uppercase tracking-widest">Quality Pass</span>
+                  <span className="text-[10px] font-bold text-gray-500 uppercase tracking-widest">Status</span>
+                  <span className="text-[10px] font-bold text-green-600 uppercase tracking-widest">Quality Pass</span>
                 </div>
               </div>
             </div>
           </div>
 
-          <Separator className="bg-slate-100" />
+          <Separator className="bg-gray-200" />
 
-          <div className="space-y-6">
-            <h3 className="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em]">Recent Inquiries</h3>
-            <div className="space-y-4">
+          <div className="space-y-4">
+            <h3 className="text-[10px] font-bold text-gray-500 uppercase tracking-widest">Recent Inquiries</h3>
+            <div className="space-y-3">
               {["PO status for Tata Steel", "Pending invoices", "GRN quality reports"].map(q => (
-                <div key={q} className="text-xs font-bold text-slate-500 hover:text-slate-900 cursor-pointer flex items-center gap-3 group transition-all">
-                  <ChevronRight size={14} className="text-slate-200 group-hover:text-slate-900 group-hover:translate-x-1 transition-all" />
+                <div key={q} className="text-xs font-bold text-gray-700 hover:text-[#002147] cursor-pointer flex items-center gap-2 group transition-colors">
+                  <ChevronRight size={12} className="text-gray-400 group-hover:text-[#002147]" />
                   {q}
                 </div>
               ))}

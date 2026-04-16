@@ -22,47 +22,47 @@ interface GeneralTabProps {
 
 export function GeneralTab({ formData, updateFormData }: GeneralTabProps) {
   return (
-    <div className="space-y-8 animate-in fade-in duration-500 pb-10">
-      <Card className="border-none shadow-none bg-slate-50/50 rounded-2xl">
-        <CardHeader className="pb-4 pt-6 px-6">
-          <CardTitle className="text-xl font-bold text-slate-900 tracking-tight">General Information</CardTitle>
-        </CardHeader>
-        <CardContent className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 px-6 pb-8">
+    <div className="space-y-6 animate-in fade-in duration-500 pb-10">
+      <div className="enterprise-card">
+        <div className="mb-4">
+          <h3 className="text-sm font-bold text-gray-900">General Information</h3>
+        </div>
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           <FormGroup label="PO Number">
             <Input
               value={formData.poNumber}
               onChange={(e) => updateFormData("poNumber", e.target.value)}
               placeholder="e.g. PO-2024-001"
-              className="h-12 bg-white rounded-xl border-slate-200 focus:ring-4 focus:ring-blue-50 focus:border-blue-400 transition-all"
+              className="enterprise-input w-full"
             />
           </FormGroup>
           <FormGroup label="PO Date">
             <DatePicker
               date={formData.poDate}
               setDate={(date) => updateFormData("poDate", date)}
-              className="h-12 w-full bg-white rounded-xl border-slate-200"
+              className="enterprise-input w-full"
             />
           </FormGroup>
           <FormGroup label="Vendor / Supplier">
             <Select value={formData.vendorId} onValueChange={(value) => updateFormData("vendorId", value)}>
-              <SelectTrigger className="h-12 bg-white rounded-xl border-slate-200 focus:ring-4 focus:ring-blue-50 font-medium">
+              <SelectTrigger className="enterprise-input w-full">
                 <SelectValue placeholder="Select Vendor" />
               </SelectTrigger>
-              <SelectContent className="rounded-xl shadow-2xl border-slate-100">
+              <SelectContent>
                 {vendors.map((v) => (
-                  <SelectItem key={v.id} value={v.id} className="rounded-lg py-2.5">{v.name}</SelectItem>
+                  <SelectItem key={v.id} value={v.id}>{v.name}</SelectItem>
                 ))}
               </SelectContent>
             </Select>
           </FormGroup>
           <FormGroup label="Purchase Type">
             <Select value={formData.purchaseType} onValueChange={(value) => updateFormData("purchaseType", value)}>
-              <SelectTrigger className="h-12 bg-white rounded-xl border-slate-200 focus:ring-4 focus:ring-blue-50">
+              <SelectTrigger className="enterprise-input w-full">
                 <SelectValue placeholder="Select Type" />
               </SelectTrigger>
-              <SelectContent className="rounded-xl shadow-2xl border-slate-100">
+              <SelectContent>
                 {purchaseTypes.map((t) => (
-                  <SelectItem key={t.id} value={t.id} className="rounded-lg py-2.5">{t.name}</SelectItem>
+                  <SelectItem key={t.id} value={t.id}>{t.name}</SelectItem>
                 ))}
               </SelectContent>
             </Select>
@@ -72,36 +72,36 @@ export function GeneralTab({ formData, updateFormData }: GeneralTabProps) {
               value={formData.contractRef}
               onChange={(e) => updateFormData("contractRef", e.target.value)}
               placeholder="Ref Number"
-              className="h-12 bg-white rounded-xl border-slate-200"
+              className="enterprise-input w-full"
             />
           </FormGroup>
           <FormGroup label="Billing Type">
             <Select value={formData.billingType} onValueChange={(value) => updateFormData("billingType", value)}>
-              <SelectTrigger className="h-12 bg-white rounded-xl border-slate-200 focus:ring-4 focus:ring-blue-50">
+              <SelectTrigger className="enterprise-input w-full">
                 <SelectValue placeholder="Select Billing Type" />
               </SelectTrigger>
-              <SelectContent className="rounded-xl shadow-2xl border-slate-100">
+              <SelectContent>
                 {billingTypes.map((b) => (
-                  <SelectItem key={b.id} value={b.id} className="rounded-lg py-2.5">{b.name}</SelectItem>
+                  <SelectItem key={b.id} value={b.id}>{b.name}</SelectItem>
                 ))}
               </SelectContent>
             </Select>
           </FormGroup>
-        </CardContent>
-      </Card>
+        </div>
+      </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-        <Card className="border-none shadow-none bg-slate-50/50 rounded-2xl">
-          <CardHeader className="pb-4 pt-6 px-6">
-            <CardTitle className="text-xl font-bold text-slate-900 tracking-tight">Contact Details</CardTitle>
-          </CardHeader>
-          <CardContent className="grid grid-cols-1 md:grid-cols-2 gap-6 px-6 pb-8">
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        <div className="enterprise-card">
+          <div className="mb-4">
+            <h3 className="text-sm font-bold text-gray-900">Contact Details</h3>
+          </div>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             <FormGroup label="Contact Person">
               <Input
                 value={formData.contactPerson}
                 onChange={(e) => updateFormData("contactPerson", e.target.value)}
                 placeholder="Full Name"
-                className="h-12 bg-white rounded-xl border-slate-200"
+                className="enterprise-input w-full"
               />
             </FormGroup>
             <FormGroup label="Contact Email">
@@ -110,52 +110,52 @@ export function GeneralTab({ formData, updateFormData }: GeneralTabProps) {
                 value={formData.contactEmail}
                 onChange={(e) => updateFormData("contactEmail", e.target.value)}
                 placeholder="email@example.com"
-                className="h-12 bg-white rounded-xl border-slate-200"
+                className="enterprise-input w-full"
               />
             </FormGroup>
-          </CardContent>
-        </Card>
+          </div>
+        </div>
 
-        <Card className="border-none shadow-none bg-slate-50/50 rounded-2xl">
-          <CardHeader className="pb-4 pt-6 px-6">
-            <CardTitle className="text-xl font-bold text-slate-900 tracking-tight">Logistics</CardTitle>
-          </CardHeader>
-          <CardContent className="grid grid-cols-1 md:grid-cols-2 gap-6 px-6 pb-8">
+        <div className="enterprise-card">
+          <div className="mb-4">
+            <h3 className="text-sm font-bold text-gray-900">Logistics</h3>
+          </div>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             <FormGroup label="Consignee">
               <Input
                 value={formData.consignee}
                 onChange={(e) => updateFormData("consignee", e.target.value)}
                 placeholder="Consignee Name"
-                className="h-12 bg-white rounded-xl border-slate-200"
+                className="enterprise-input w-full"
               />
             </FormGroup>
             <FormGroup label="Transport Type">
               <Select value={formData.transportType} onValueChange={(value) => updateFormData("transportType", value)}>
-                <SelectTrigger className="h-12 bg-white rounded-xl border-slate-200 focus:ring-4 focus:ring-blue-50">
+                <SelectTrigger className="enterprise-input w-full">
                   <SelectValue placeholder="Select Transport" />
                 </SelectTrigger>
-                <SelectContent className="rounded-xl shadow-2xl border-slate-100">
+                <SelectContent>
                   {transportTypes.map((t) => (
-                    <SelectItem key={t.id} value={t.id} className="rounded-lg py-2.5">{t.name}</SelectItem>
+                    <SelectItem key={t.id} value={t.id}>{t.name}</SelectItem>
                   ))}
                 </SelectContent>
               </Select>
             </FormGroup>
-          </CardContent>
-        </Card>
+          </div>
+        </div>
       </div>
 
-      <Card className="border-none shadow-none bg-slate-50/50 rounded-2xl">
-        <CardHeader className="pb-4 pt-6 px-6">
-          <CardTitle className="text-xl font-bold text-slate-900 tracking-tight">Address Information</CardTitle>
-        </CardHeader>
-        <CardContent className="grid grid-cols-1 md:grid-cols-2 gap-8 px-6 pb-8">
+      <div className="enterprise-card">
+        <div className="mb-4">
+          <h3 className="text-sm font-bold text-gray-900">Address Information</h3>
+        </div>
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
           <FormGroup label="Billing Address">
             <Textarea
               value={formData.billingAddress}
               onChange={(e) => updateFormData("billingAddress", e.target.value)}
               placeholder="Full Billing Address"
-              className="bg-white rounded-xl border-slate-200 min-h-[120px] focus:ring-4 focus:ring-blue-50 transition-all"
+              className="enterprise-input w-full min-h-[120px] resize-none py-3"
             />
           </FormGroup>
           <FormGroup label="Shipping Address">
@@ -163,19 +163,19 @@ export function GeneralTab({ formData, updateFormData }: GeneralTabProps) {
               value={formData.shippingAddress}
               onChange={(e) => updateFormData("shippingAddress", e.target.value)}
               placeholder="Full Shipping Address"
-              className="bg-white rounded-xl border-slate-200 min-h-[120px] focus:ring-4 focus:ring-blue-50 transition-all"
+              className="enterprise-input w-full min-h-[120px] resize-none py-3"
             />
           </FormGroup>
-        </CardContent>
-      </Card>
+        </div>
+      </div>
     </div>
   );
 }
 
 function FormGroup({ label, children }: { label: string, children: React.ReactNode }) {
   return (
-    <div className="space-y-2.5">
-      <Label className="text-[10px] font-black uppercase tracking-[0.2em] text-slate-400 ml-1 block">
+    <div className="space-y-2">
+      <Label className="text-[10px] font-bold uppercase tracking-widest text-gray-500 block">
         {label}
       </Label>
       {children}
