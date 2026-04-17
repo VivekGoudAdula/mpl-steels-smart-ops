@@ -1,44 +1,33 @@
-
 import React, { useState } from "react";
 import { 
   Mail, 
   Lock, 
-  User, 
   Eye, 
   EyeOff, 
   ArrowRight,
   ShieldCheck,
   Loader2,
-  CheckCircle2,
-  LayoutDashboard,
   Files,
   Cpu,
   ArrowRightLeft
 } from "lucide-react";
 import { Checkbox } from "@/components/ui/checkbox";
-import { cn } from "@/lib/utils";
 
-type AuthMode = "login" | "signup";
-export type UserRole = "admin" | "operations" | "finance";
+export type UserRole = "super_admin" | "editor" | "viewer" | "admin" | "operations" | "finance";
 
 interface AuthProps {
-  initialMode?: AuthMode;
-  onAuthSuccess: (user: { name: string; email: string; role: UserRole }) => void;
+  onAuthSuccess: (user: { id?: string; name: string; email: string; role: UserRole; company_id?: string; status?: string }) => void;
   onBack: () => void;
 }
 
-export default function Auth({ initialMode = "login", onAuthSuccess, onBack }: AuthProps) {
-  const [mode, setMode] = useState<AuthMode>(initialMode);
+export default function Auth({ onAuthSuccess, onBack }: AuthProps) {
   const [showPassword, setShowPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
   const [formData, setFormData] = useState({
-    fullName: "",
     email: "",
     password: "",
-    confirmPassword: "",
-    role: "operations" as UserRole
   });
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -50,27 +39,28 @@ export default function Auth({ initialMode = "login", onAuthSuccess, onBack }: A
       return;
     }
 
-    if (mode === "signup") {
-      if (!formData.fullName) {
-        setError("Full name is required.");
-        return;
-      }
-      if (formData.password !== formData.confirmPassword) {
-        setError("Passwords do not match.");
-        return;
-      }
-    }
-
     setIsLoading(true);
 
-    setTimeout(() => {
-      setIsLoading(false);
-      onAuthSuccess({
-        name: formData.fullName || "User",
-        email: formData.email,
-        role: formData.role
+    try {
+      const res = await fetch("http://localhost:8000/auth/login", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email: formData.email, password: formData.password })
       });
-    }, 1500);
+      
+      if (res.ok) {
+        const data = await res.json();
+        localStorage.setItem("token", data.token);
+        onAuthSuccess(data.user);
+      } else {
+        const errData = await res.json();
+        setError(errData.detail || "Authentication failed");
+      }
+    } catch (err) {
+      setError("Failed to connect to the server.");
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   return (
@@ -138,33 +128,16 @@ export default function Auth({ initialMode = "login", onAuthSuccess, onBack }: A
         <div className="w-full max-w-[440px] space-y-8">
           <div className="space-y-2 text-center lg:text-left">
             <h2 className="text-3xl font-bold tracking-tight">
-              {mode === "login" ? "Welcome Back" : "Create Account"}
+              Welcome Back
             </h2>
             <p className="text-slate-500 font-medium">
-              {mode === "login" 
-                ? "Enter your credentials to access the platform" 
-                : "Fill in the details below to initialize your workspace"}
+              Enter your credentials to access the platform
             </p>
           </div>
 
           <div className="enterprise-card p-10 border-slate-200 shadow-xl shadow-slate-200/50">
             <form onSubmit={handleSubmit} className="space-y-5">
-              {mode === "signup" && (
-                <div className="space-y-2">
-                  <label className="text-xs font-bold uppercase tracking-wider text-slate-500 ml-1">Full Name</label>
-                  <div className="relative group">
-                    <User className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 group-focus-within:text-[#0f172a] transition-colors" size={18} />
-                    <input 
-                      type="text"
-                      placeholder="Enter your name"
-                      className="enterprise-input !pl-12"
-                      value={formData.fullName}
-                      onChange={(e) => setFormData({...formData, fullName: e.target.value})}
-                    />
-                  </div>
-                </div>
-              )}
-
+              
               <div className="space-y-2">
                 <label className="text-xs font-bold uppercase tracking-wider text-slate-500 ml-1">Work Email</label>
                 <div className="relative group">
@@ -182,11 +155,9 @@ export default function Auth({ initialMode = "login", onAuthSuccess, onBack }: A
               <div className="space-y-2">
                 <div className="flex justify-between items-center px-1">
                   <label className="text-xs font-bold uppercase tracking-wider text-slate-500">Password</label>
-                  {mode === "login" && (
-                    <button type="button" className="text-[11px] font-bold text-blue-600 hover:text-blue-700 transition-colors uppercase tracking-widest">
-                      Forgot?
-                    </button>
-                  )}
+                  <button type="button" className="text-[11px] font-bold text-blue-600 hover:text-blue-700 transition-colors uppercase tracking-widest">
+                    Forgot?
+                  </button>
                 </div>
                 <div className="relative group">
                   <Lock className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 group-focus-within:text-[#0f172a] transition-colors" size={18} />
@@ -207,28 +178,10 @@ export default function Auth({ initialMode = "login", onAuthSuccess, onBack }: A
                 </div>
               </div>
 
-              {mode === "signup" && (
-                <div className="space-y-2">
-                  <label className="text-xs font-bold uppercase tracking-wider text-slate-500 ml-1">Confirm Password</label>
-                  <div className="relative group">
-                    <Lock className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 group-focus-within:text-[#0f172a] transition-colors" size={18} />
-                    <input 
-                      type="password"
-                      placeholder="••••••••"
-                      className="enterprise-input !pl-12"
-                      value={formData.confirmPassword}
-                      onChange={(e) => setFormData({...formData, confirmPassword: e.target.value})}
-                    />
-                  </div>
-                </div>
-              )}
-
-              {mode === "login" && (
-                <div className="flex items-center gap-2 px-1">
-                  <Checkbox id="remember" className="border-slate-300 data-[state=checked]:bg-[#0f172a]" />
-                  <label htmlFor="remember" className="text-sm font-semibold text-slate-600 cursor-pointer">Remember me</label>
-                </div>
-              )}
+              <div className="flex items-center gap-2 px-1">
+                <Checkbox id="remember" className="border-slate-300 data-[state=checked]:bg-[#0f172a]" />
+                <label htmlFor="remember" className="text-sm font-semibold text-slate-600 cursor-pointer">Remember me</label>
+              </div>
 
               {error && (
                 <div className="p-3 bg-red-50 border border-red-100 text-red-600 text-[11px] font-bold uppercase tracking-widest rounded-lg flex items-center gap-2">
@@ -247,18 +200,10 @@ export default function Auth({ initialMode = "login", onAuthSuccess, onBack }: A
                     <Loader2 className="animate-spin" size={20} />
                   ) : (
                     <div className="flex items-center justify-center gap-2">
-                      <span>{mode === "login" ? "Sign In" : "Create Account"}</span>
+                      <span>Sign In</span>
                       <ArrowRight size={18} className="opacity-60" />
                     </div>
                   )}
-                </button>
-
-                <button 
-                  type="button"
-                  onClick={() => setMode(mode === "login" ? "signup" : "login")}
-                  className="enterprise-button-secondary w-full"
-                >
-                  {mode === "login" ? "Create New Workspace" : "Return to Login"}
                 </button>
               </div>
             </form>

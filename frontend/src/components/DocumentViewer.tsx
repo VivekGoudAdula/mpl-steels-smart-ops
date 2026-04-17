@@ -39,9 +39,10 @@ interface DocumentViewerProps {
   transaction: Transaction | null;
   isOpen: boolean;
   onClose: () => void;
+  userRole?: string;
 }
 
-export default function DocumentViewer({ transaction: txn, isOpen, onClose }: DocumentViewerProps) {
+export default function DocumentViewer({ transaction: txn, isOpen, onClose, userRole }: DocumentViewerProps) {
   const [activeDoc, setActiveDoc] = useState<TransactionDocument | null>(null);
   const [searchQuery, setSearchQuery] = useState("");
   const [chatMessage, setChatMessage] = useState("");
@@ -235,13 +236,15 @@ export default function DocumentViewer({ transaction: txn, isOpen, onClose }: Do
                         >
                           <Download size={14} />
                         </button>
-                        <button 
-                          title="Remove Document"
-                          onClick={(e) => handleRemoveDoc(doc.id, e)}
-                          className="p-1 text-slate-400 hover:text-red-500 transition-colors"
-                        >
-                          <Trash2 size={14} />
-                        </button>
+                        {userRole !== "viewer" && (
+                          <button 
+                            title="Remove Document"
+                            onClick={(e) => handleRemoveDoc(doc.id, e)}
+                            className="p-1 text-slate-400 hover:text-red-500 transition-colors"
+                          >
+                            <Trash2 size={14} />
+                          </button>
+                        )}
                       </div>
                     </div>
                   </div>
@@ -249,22 +252,24 @@ export default function DocumentViewer({ transaction: txn, isOpen, onClose }: Do
               )}
             </div>
 
-            <div className="p-4 bg-slate-50 border-t border-slate-100">
-              <input 
-                type="file" 
-                id="doc-upload" 
-                className="hidden" 
-                accept=".pdf,.png,.jpg,.jpeg"
-                onChange={handleFileChange}
-              />
-              <Button 
-                onClick={() => document.getElementById('doc-upload')?.click()}
-                className="w-full bg-white text-indigo-600 border border-indigo-100 hover:bg-indigo-50 rounded-xl h-10 font-bold text-[10px] uppercase tracking-widest shadow-sm gap-2"
-              >
-                <PlusIcon size={14} />
-                Upload New Document
-              </Button>
-            </div>
+            {userRole !== "viewer" && (
+              <div className="p-4 bg-slate-50 border-t border-slate-100">
+                <input 
+                  type="file" 
+                  id="doc-upload" 
+                  className="hidden" 
+                  accept=".pdf,.png,.jpg,.jpeg"
+                  onChange={handleFileChange}
+                />
+                <Button 
+                  onClick={() => document.getElementById('doc-upload')?.click()}
+                  className="w-full bg-white text-indigo-600 border border-indigo-100 hover:bg-indigo-50 rounded-xl h-10 font-bold text-[10px] uppercase tracking-widest shadow-sm gap-2"
+                >
+                  <PlusIcon size={14} />
+                  Upload New Document
+                </Button>
+              </div>
+            )}
           </aside>
 
           {/* PANEL 2: Central Viewer (Center) - Flexible */}

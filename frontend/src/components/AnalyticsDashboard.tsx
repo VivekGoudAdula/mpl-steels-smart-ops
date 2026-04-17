@@ -23,7 +23,7 @@ const kpiData = [
   { label: "Active Transactions", value: "45", trend: "+15%", isUp: true, icon: Zap, color: "text-amber-600 bg-amber-50" },
 ];
 
-export default function AnalyticsDashboard() {
+export default function AnalyticsDashboard({ user }: { user?: any }) {
   const [isDownloading, setIsDownloading] = useState(false);
   const [selectedTransaction, setSelectedTransaction] = useState<any>(null);
 
@@ -42,7 +42,7 @@ export default function AnalyticsDashboard() {
         <div>
           <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-1 flex items-center gap-2">
             <span className="w-4 h-px bg-gray-300"></span>
-            Overview & Insights
+            {user?.company_name || 'Overview & Insights'}
           </p>
           <h1 className="text-2xl font-bold text-gray-900 tracking-tight">Executive Dashboard</h1>
           <p className="text-sm text-gray-500 mt-1">Real-time status of procurement metrics and transaction logs.</p>

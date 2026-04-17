@@ -1,10 +1,9 @@
-
 /**
  * @license
  * SPDX-License-Identifier: Apache-2.0
  */
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { 
   LayoutDashboard, 
   ShoppingCart, 
@@ -20,7 +19,8 @@ import {
   Sparkles,
   ArrowRightLeft,
   Cpu,
-  Bot
+  Bot,
+  Shield
 } from "lucide-react";
 
 import ProcurementModule from "./components/ProcurementModule";
@@ -34,24 +34,34 @@ import AnalyticsDashboard from "./components/AnalyticsDashboard";
 import DocumentComparison from "./components/DocumentComparison";
 import ProcessAutomation from "./components/ProcessAutomation";
 import VendorsModule from "./components/VendorsModule";
+import UserManagement from "./components/UserManagement";
 import SettingsModule from "./components/SettingsModule";
 import LandingPage from "./components/LandingPage";
 import Auth, { UserRole } from "./components/Auth";
+import SuperAdminApp from "./components/SuperAdminApp";
 import { Toaster } from "@/components/ui/sonner";
 
-type Module = "dashboard" | "procurement" | "weighbridge" | "grn" | "invoice" | "documents" | "comparison" | "automation" | "ai-assistant" | "smart-assistant" | "vendors" | "settings";
-type View = "landing" | "login" | "signup" | "app";
+type Module = "dashboard" | "procurement" | "weighbridge" | "grn" | "invoice" | "documents" | "comparison" | "automation" | "ai-assistant" | "smart-assistant" | "vendors" | "settings" | "user-management";
+type View = "landing" | "login" | "app";
 
 interface UserData {
+  id?: string;
   name: string;
   email: string;
   role: UserRole;
+  company_id?: string;
+  company_name?: string;
+  status?: string;
 }
 
 export default function App() {
   const [view, setView] = useState<View>("landing");
   const [user, setUser] = useState<UserData | null>(null);
   const [activeModule, setActiveModule] = useState<Module>("dashboard");
+
+  useEffect(() => {
+    // Check if we have a token on load and validate it if needed (not implemented here for simplicity)
+  }, []);
 
   const handleAuthSuccess = (userData: UserData) => {
     setUser(userData);
@@ -61,44 +71,61 @@ export default function App() {
 
   const handleLogout = () => {
     setUser(null);
+    localStorage.removeItem("token");
     setView("landing");
   };
 
   const renderModule = () => {
     switch (activeModule) {
-      case "dashboard": return <AnalyticsDashboard />;
+      case "dashboard": return <AnalyticsDashboard user={user as any} />;
       case "procurement": return <ProcurementModule />;
       case "weighbridge": return <WeighbridgeModule />;
       case "grn": return <GRNModule />;
       case "invoice": return <InvoiceModule />;
-      case "documents": return <DocumentManagement />;
+      case "documents": return <DocumentManagement userRole={user?.role} />;
       case "comparison": return <DocumentComparison />;
       case "automation": return <ProcessAutomation />;
       case "ai-assistant": return <AIDocumentAssistant />;
       case "smart-assistant": return <SmartAssistant />;
       case "vendors": return <VendorsModule />;
-      case "settings": return <SettingsModule user={user} />;
+      case "settings": return <SettingsModule user={user as any} />;
+      case "user-management": return <UserManagement />;
       default: return null;
     }
   };
 
   if (view === "landing") {
-    return <LandingPage onGetStarted={() => setView("signup")} onLogin={() => setView("login")} />;
+    return <LandingPage onGetStarted={() => setView("login")} onLogin={() => setView("login")} />;
   }
 
-  if (view === "login" || view === "signup") {
-    return <Auth initialMode={view} onAuthSuccess={handleAuthSuccess} onBack={() => setView("landing")} />;
+  if (view === "login") {
+    return <Auth onAuthSuccess={handleAuthSuccess} onBack={() => setView("landing")} />;
+  }
+
+  if (user?.role === "super_admin") {
+    return <SuperAdminApp user={user} onLogout={handleLogout} />;
   }
 
   const isAllowed = (module: Module) => {
     if (!user) return false;
+    
+    // Viewer vs Editor rules:
+    // Actually both editor and viewer can probably see all these UI modules,
+    // but the editor can "write" whereas viewer can "read".
+    // We will let both see the modules.
+    if (user.role === "editor" || user.role === "viewer") {
+      if (module === "user-management") return false;
+      return true;
+    }
+
+    // Legacy support fallback
     if (user.role === "admin") return true;
-    const permissions: Record<UserRole, Module[]> = {
+    const permissions: Record<string, Module[]> = {
       admin: [],
-      operations: ["dashboard", "procurement", "weighbridge", "grn", "invoice", "documents", "comparison", "automation", "ai-assistant", "smart-assistant", "vendors"],
-      finance: ["dashboard", "invoice", "documents", "comparison", "automation", "ai-assistant"]
+      operations: ["dashboard", "procurement", "weighbridge", "grn", "invoice", "documents", "comparison", "automation", "ai-assistant", "smart-assistant", "vendors", "settings"],
+      finance: ["dashboard", "invoice", "documents", "comparison", "automation", "ai-assistant", "settings"]
     };
-    return permissions[user.role].includes(module);
+    return (permissions[user.role] || []).includes(module);
   };
 
   return (
@@ -133,7 +160,8 @@ export default function App() {
             {isAllowed("ai-assistant") && <NavItem icon={<Sparkles size={18} />} label="Co-Pilot" active={activeModule === "ai-assistant"} onClick={() => setActiveModule("ai-assistant")} />}
             {isAllowed("vendors") && <NavItem icon={<Users size={18} />} label="Vendors" active={activeModule === "vendors"} onClick={() => setActiveModule("vendors")} />}
             <div className="h-px bg-slate-800/50 my-4 mx-3" />
-            <NavItem icon={<Settings size={18} />} label="Setup" active={activeModule === "settings"} onClick={() => setActiveModule("settings")} />
+            {isAllowed("user-management") && <NavItem icon={<Shield size={18} />} label="Access Control" active={activeModule === "user-management"} onClick={() => setActiveModule("user-management")} />}
+            {isAllowed("settings") && <NavItem icon={<Settings size={18} />} label="Basic Settings" active={activeModule === "settings"} onClick={() => setActiveModule("settings")} />}
           </div>
         </div>
         
@@ -174,21 +202,20 @@ export default function App() {
             
             <div className="flex items-center gap-3 pl-1 pr-1 py-1 rounded-md transition-all cursor-pointer h-9 group">
               <div className="flex flex-col items-end mr-1">
-                <span className="text-[10px] font-black text-slate-900 leading-none uppercase tracking-wide">Administrator</span>
-                <span className="text-[9px] text-blue-600 font-black uppercase tracking-tight mt-1">
-                  System Active
+                <span className="text-[10px] font-black text-slate-900 leading-none uppercase tracking-wide">{user?.name}</span>
+                <span className="text-[9px] text-blue-600 font-bold uppercase tracking-tight mt-1">
+                  {user?.role} - Active
                 </span>
               </div>
               <div className="w-8 h-8 rounded bg-slate-100 border border-slate-200 flex items-center justify-center text-slate-900 text-xs font-black shadow-sm group-hover:border-blue-400/50 transition-colors">
-                {user?.name.charAt(0) || "A"}
+                {user?.name?.charAt(0) || "U"}
               </div>
             </div>
-            <button className="h-9 w-9 flex items-center justify-center text-slate-400 hover:text-slate-900 transition-all ml-1">
+            <button onClick={handleLogout} className="h-9 w-9 flex items-center justify-center text-slate-400 hover:text-slate-900 transition-all ml-1">
               <LogOut size={16} />
             </button>
           </div>
         </header>
-
 
         {/* Page Content */}
         <div className="flex-1 p-8 overflow-y-auto">

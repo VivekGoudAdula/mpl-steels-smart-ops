@@ -6,7 +6,7 @@ import DocumentViewer from "./DocumentViewer";
 
 import { Plus } from "lucide-react";
 
-export default function DocumentManagement() {
+export default function DocumentManagement({ userRole }: { userRole?: string }) {
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedPO, setSelectedPO] = useState("all");
   const [selectedType, setSelectedType] = useState("all");
@@ -72,10 +72,12 @@ export default function DocumentManagement() {
           <p className="text-slate-500 font-medium">Configure and manage layouts for your business transactions.</p>
         </div>
         <div className="flex items-center">
-          <button className="enterprise-button-primary px-8 gap-3 shadow-md shadow-slate-200">
-            <Plus className="w-5 h-5 stroke-[3px]" />
-            <span>Create New Record</span>
-          </button>
+          {userRole !== "viewer" && (
+            <button className="enterprise-button-primary px-8 gap-3 shadow-md shadow-slate-200">
+              <Plus className="w-5 h-5 stroke-[3px]" />
+              <span>Create New Record</span>
+            </button>
+          )}
         </div>
       </div>
 
@@ -142,6 +144,7 @@ export default function DocumentManagement() {
         transaction={selectedTransaction}
         isOpen={!!selectedTransaction}
         onClose={() => setSelectedTransaction(null)}
+        userRole={userRole}
       />
     </div>
   );
