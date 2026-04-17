@@ -1,44 +1,41 @@
 
 import React, { useState, useMemo, useEffect } from "react";
 import { Plus, Loader2 } from "lucide-react";
-import {
-  Dialog,
-  DialogContent,
-  DialogTrigger
-} from "@/components/ui/dialog";
-import api from "@/lib/api";
 import { DocumentTable } from "./shared/DocumentTable";
 import { FilterBar } from "./shared/FilterBar";
 import DocumentViewer from "./DocumentViewer";
-import WeighbridgeForm from "./forms/WeighbridgeForm";
 import { toast } from "sonner";
+import { fetchWB } from "../services/erpApi";
 
 export default function WeighbridgeModule() {
   const [searchQuery, setSearchQuery] = useState("");
-  const [selectedPO, setSelectedPO] = useState("all");
-  const [selectedDateRange, setSelectedDateRange] = useState("all");
+  const [startDate, setStartDate] = useState("");
+  const [endDate, setEndDate] = useState("");
   const [selectedTransaction, setSelectedTransaction] = useState<any>(null);
-  const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
   const [transactions, setTransactions] = useState<any[]>([]);
   const [isLoading, setIsLoading] = useState(true);
 
   const fetchTransactions = async () => {
     setIsLoading(true);
     try {
-      const res = await api.get("/transactions");
-      const mapped = res.data.map((t: any) => ({
-        id: t._id, // Keep the Mongo ID for updates
-        txnId: t.txn_id,
-        poNumber: t.po?.po_number || "-",
-        wbNumber: t.wb?.wb_number || "-",
-        grnNumber: t.grn?.grn_number || "-",
-        invoiceNumber: t.invoice?.invoice_number || "-",
-        date: new Date(t.created_at).toLocaleDateString(),
-        documents: t.documents || [],
-      }));
+      const data = await fetchWB();
+      const mapped = data.map((t: any) => {
+        const generatedTxnId = t.txn_id || (t.po_number ? `TXN-${t.po_number}` : `TXN-UNLINKED`);
+        return {
+          id: generatedTxnId,
+          txnId: generatedTxnId,
+          poNumber: t.po_number || "-",
+          wbNumber: t.wb_number || "-",
+          grnNumber: t.grn_number || "-",
+          invoiceNumber: t.invoice_number || "-",
+          date: new Date(t.date).toLocaleDateString(),
+          rawDate: t.date,
+          documents: t.documents || [],
+        };
+      });
       setTransactions(mapped);
     } catch (error) {
-      toast.error("Failed to fetch transactions");
+      toast.error("Failed to fetch WB transactions from ERP");
     } finally {
       setIsLoading(false);
     }
@@ -63,28 +60,28 @@ export default function WeighbridgeModule() {
           txn.documents.some((doc: any) => doc.name.toLowerCase().includes(query));
       }
 
-      const matchesPO = selectedPO === "all" || txn.poNumber === selectedPO;
-
       // 2. DATE FILTERS
       let matchesDate = true;
-      if (selectedDateRange !== "all" && txn.date) {
-        const docDate = new Date(txn.date).getTime();
-        const now = new Date("2024-04-16").getTime();
-        const diffInDays = (now - docDate) / (1000 * 3600 * 24);
-
-        if (selectedDateRange === "7d") matchesDate = diffInDays <= 7;
-        else if (selectedDateRange === "30d") matchesDate = diffInDays <= 30;
-        else if (selectedDateRange === "90d") matchesDate = diffInDays <= 90;
+      if (txn.rawDate) {
+        const docDate = new Date(txn.rawDate).setHours(0, 0, 0, 0);
+        if (startDate) {
+          const start = new Date(startDate).setHours(0, 0, 0, 0);
+          if (docDate < start) matchesDate = false;
+        }
+        if (endDate) {
+          const end = new Date(endDate).setHours(0, 0, 0, 0);
+          if (docDate > end) matchesDate = false;
+        }
       }
 
-      return matchesSearch && matchesPO && matchesDate;
+      return matchesSearch && matchesDate;
     });
-  }, [transactions, searchQuery, selectedPO, selectedDateRange]);
+  }, [transactions, searchQuery, startDate, endDate]);
 
   const resetFilters = () => {
     setSearchQuery("");
-    setSelectedPO("all");
-    setSelectedDateRange("all");
+    setStartDate("");
+    setEndDate("");
   };
 
   return (
@@ -101,41 +98,18 @@ export default function WeighbridgeModule() {
             <span className="text-[10px] font-black uppercase tracking-[0.3em] text-slate-400">Logistics & Tracking</span>
           </div>
           <h1 className="text-3xl font-bold text-slate-900 tracking-tight mb-2">Weighbridge</h1>
-          <p className="text-slate-500 font-medium">Track vehicle entries, load weights, and logistics documentation.</p>
+          <p className="text-slate-500 font-medium">Track vehicle entries, load weights, and logistics documentation from ERP.</p>
         </div>
-
-        <Dialog open={isCreateModalOpen} onOpenChange={setIsCreateModalOpen}>
-          <DialogTrigger className="enterprise-button-primary px-8 gap-3 shadow-md shadow-slate-200 flex items-center">
-            <Plus className="w-5 h-5 stroke-[3px]" />
-            <span>New Weighbridge Entry</span>
-          </DialogTrigger>
-
-          <DialogContent className="max-w-[95vw] sm:max-w-[95vw] w-[95vw] h-[92vh] max-h-[92vh] overflow-y-auto rounded-3xl p-0 border-none shadow-2xl">
-            <div className="bg-white w-full h-full min-h-full flex flex-col">
-              <WeighbridgeForm 
-                isModal 
-                onClose={() => setIsCreateModalOpen(false)} 
-                onSuccess={() => {
-                  setIsCreateModalOpen(false);
-                  fetchTransactions();
-                }}
-              />
-            </div>
-          </DialogContent>
-        </Dialog>
       </div>
-
-
       <div className="enterprise-card border-[#e5e7eb] shadow-sm p-4 rounded-xl bg-white mb-6">
         <FilterBar
           searchQuery={searchQuery}
           setSearchQuery={setSearchQuery}
-          selectedPO={selectedPO}
-          setSelectedPO={setSelectedPO}
-          selectedDateRange={selectedDateRange}
-          setSelectedDateRange={setSelectedDateRange}
+          startDate={startDate}
+          setStartDate={setStartDate}
+          endDate={endDate}
+          setEndDate={setEndDate}
           resetFilters={resetFilters}
-          samplePOs={Array.from(new Set(transactions.map(t => t.poNumber))).filter(p => p !== "-").map(p => ({ id: p }))}
           placeholder="Search WB number or PO..."
         />
       </div>
@@ -149,7 +123,7 @@ export default function WeighbridgeModule() {
         <DocumentTable
           transactions={filteredTransactions}
           onView={setSelectedTransaction}
-          title="Weighbridge Transactions"
+          variant="WB"
         />
       )}
 
@@ -157,8 +131,8 @@ export default function WeighbridgeModule() {
         transaction={selectedTransaction}
         isOpen={!!selectedTransaction}
         onClose={() => setSelectedTransaction(null)}
+        defaultType="WB"
       />
     </div>
   );
 }
-

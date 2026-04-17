@@ -24,14 +24,6 @@ class DocumentService:
         """
         Upload a file, save it to storage, and link it to the transaction.
         """
-        if not ObjectId.is_valid(txn_id):
-            return None
-
-        # Check if transaction exists and belongs to company
-        transaction = await db["transactions"].find_one({"_id": ObjectId(txn_id), "company_id": company_id})
-        if not transaction:
-            return None
-
         # Generate unique filename
         ext = os.path.splitext(file.filename)[1]
         filename = f"{uuid.uuid4()}{ext}"
@@ -52,10 +44,11 @@ class DocumentService:
             "uploaded_at": datetime.utcnow()
         }
 
-        # Push to transaction
-        await db["transactions"].update_one(
-            {"_id": ObjectId(txn_id)},
-            {"$push": {"documents": doc_obj}}
+        # Push to ERP document mapping collection
+        await db["erp_document_links"].update_one(
+            {"txn_id": txn_id, "company_id": company_id},
+            {"$push": {"documents": doc_obj}},
+            upsert=True
         )
 
         return doc_obj
@@ -69,11 +62,8 @@ class DocumentService:
         """
         Get all documents for a transaction.
         """
-        if not ObjectId.is_valid(txn_id):
-            return []
-
-        transaction = await db["transactions"].find_one(
-            {"_id": ObjectId(txn_id), "company_id": company_id},
+        transaction = await db["erp_document_links"].find_one(
+            {"txn_id": txn_id, "company_id": company_id},
             {"documents": 1}
         )
         
@@ -89,7 +79,7 @@ class DocumentService:
         Delete a document from transaction and physical storage.
         """
         # Find the transaction containing this document
-        transaction = await db["transactions"].find_one(
+        transaction = await db["erp_document_links"].find_one(
             {"company_id": company_id, "documents.id": doc_id}
         )
         
@@ -102,7 +92,7 @@ class DocumentService:
             return False
 
         # Remove from DB
-        await db["transactions"].update_one(
+        await db["erp_document_links"].update_one(
             {"_id": transaction["_id"]},
             {"$pull": {"documents": {"id": doc_id}}}
         )
@@ -136,7 +126,7 @@ class DocumentService:
         if not update_fields:
             return False
 
-        result = await db["transactions"].update_one(
+        result = await db["erp_document_links"].update_one(
             {"company_id": company_id, "documents.id": doc_id},
             {"$set": update_fields}
         )

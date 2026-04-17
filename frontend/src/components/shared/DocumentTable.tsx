@@ -38,13 +38,15 @@ interface DocumentTableProps {
   onView: (transaction: any) => void;
   onUpload?: (transaction: any) => void;
   onSuccess?: () => void;
+  variant?: "PO" | "WB" | "GRN" | "INV" | "ALL";
 }
 
 export const DocumentTable: React.FC<DocumentTableProps> = ({ 
   transactions, 
   onView,
   onUpload,
-  onSuccess
+  onSuccess,
+  variant = "ALL"
 }) => {
   const [deleteConfirmOpen, setDeleteConfirmOpen] = useState(false);
   const [pendingDeleteTxn, setPendingDeleteTxn] = useState<any>(null);
@@ -83,10 +85,10 @@ export const DocumentTable: React.FC<DocumentTableProps> = ({
         <TableHeader>
           <TableRow className="hover:bg-transparent border-none">
             <TableHead className="professional-table-header pl-6"># Txn ID</TableHead>
-            <TableHead className="professional-table-header">PO Number</TableHead>
-            <TableHead className="professional-table-header">WB Number</TableHead>
-            <TableHead className="professional-table-header">GRN Number</TableHead>
-            <TableHead className="professional-table-header">Invoice Number</TableHead>
+            {(variant === "ALL" || variant === "PO") && <TableHead className="professional-table-header">PO Number</TableHead>}
+            {(variant === "ALL" || variant === "WB") && <TableHead className="professional-table-header">WB Number</TableHead>}
+            {(variant === "ALL" || variant === "GRN") && <TableHead className="professional-table-header">GRN Number</TableHead>}
+            {(variant === "ALL" || variant === "INV") && <TableHead className="professional-table-header">Invoice Number</TableHead>}
             <TableHead className="professional-table-header">Documents</TableHead>
             <TableHead className="professional-table-header">Latest activity</TableHead>
             <TableHead className="professional-table-header text-right pr-6">Management</TableHead>
@@ -109,35 +111,65 @@ export const DocumentTable: React.FC<DocumentTableProps> = ({
                     <span className="text-[10px] font-mono font-bold text-slate-400 mt-0.5 tracking-tighter uppercase">ID Index: {index + 1}</span>
                   </div>
                 </TableCell>
-                <TableCell className="text-sm font-semibold text-slate-600">
-                  {txn.poNumber}
-                </TableCell>
-                <TableCell className="text-sm font-semibold text-slate-600 font-mono">
-                  {txn.wbNumber}
-                </TableCell>
-                <TableCell className="text-sm font-semibold text-slate-600 font-mono">
-                  {txn.grnNumber}
-                </TableCell>
-                <TableCell className="text-sm font-semibold text-slate-600 font-mono">
-                  {txn.invoiceNumber}
-                </TableCell>
+                
+                {(variant === "ALL" || variant === "PO") && (
+                  <TableCell className="text-sm font-semibold text-slate-600">
+                    {txn.poNumber}
+                  </TableCell>
+                )}
+
+                {(variant === "ALL" || variant === "WB") && (
+                  <TableCell className="text-sm font-semibold text-slate-600 font-mono">
+                    {txn.wbNumber}
+                  </TableCell>
+                )}
+
+                {(variant === "ALL" || variant === "GRN") && (
+                  <TableCell className="text-sm font-semibold text-slate-600 font-mono">
+                    {txn.grnNumber}
+                  </TableCell>
+                )}
+
+                {(variant === "ALL" || variant === "INV") && (
+                  <TableCell className="text-sm font-semibold text-slate-600 font-mono">
+                    {txn.invoiceNumber}
+                  </TableCell>
+                )}
                 <TableCell>
                   <button 
                     onClick={() => onView(txn)}
                     className="flex items-center gap-2 px-3 py-1.5 bg-slate-100/50 text-slate-600 border border-slate-200 rounded-xl hover:bg-white hover:shadow-md transition-all active:scale-95"
                   >
                     <div className="flex -space-x-2">
-                      {txn.documents.slice(0, 3).map((doc) => (
-                        <div key={doc.id} className={cn(
-                          "w-6 h-6 rounded-lg border-2 border-white flex items-center justify-center text-[8px] font-black shadow-sm",
-                          getDocTypeColor(doc.type)
-                        )}>
-                          {doc.type.charAt(0)}
-                        </div>
-                      ))}
+                      {txn.documents.length > 0 ? (
+                        txn.documents.slice(0, 3).map((doc) => (
+                          <div key={doc.id} className={cn(
+                            "w-6 h-6 rounded-lg border-2 border-white flex items-center justify-center text-[8px] font-black shadow-sm",
+                            getDocTypeColor(doc.type)
+                          )}>
+                            {doc.type.charAt(0)}
+                          </div>
+                        ))
+                      ) : (
+                        (() => {
+                           const fallbackType = 
+                             txn.poNumber !== "-" ? "PO" : 
+                             txn.wbNumber !== "-" ? "WB" : 
+                             txn.grnNumber !== "-" ? "GRN" : 
+                             "INV";
+                           return (
+                             <div className={cn(
+                               "w-6 h-6 rounded-lg border-2 border-white flex items-center justify-center text-[8px] font-black shadow-sm opacity-60",
+                               getDocTypeColor(fallbackType)
+                             )}>
+                               {fallbackType.charAt(0)}
+                             </div>
+                           );
+                        })()
+                      )}
                     </div>
                     <span className="text-[10px] font-black uppercase tracking-wider ml-1">
-                      {txn.documents.length} Files
+                      {Math.max(txn.documents.length, 1)} {Math.max(txn.documents.length, 1) === 1 ? "File" : "Files"}
                     </span>
                   </button>
                 </TableCell>

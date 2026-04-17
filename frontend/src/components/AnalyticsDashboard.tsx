@@ -1,20 +1,18 @@
 import React, { useState, useEffect } from "react";
 import { 
   ShoppingCart, 
-  ClipboardCheck, 
   ReceiptText, 
   Clock,
   Download,
-  TrendingUp,
   Zap,
   Loader2,
   Files
 } from "lucide-react";
 import { toast } from "sonner";
-import api from "@/lib/api";
 import { DocumentTable } from "./shared/DocumentTable";
 import DocumentViewer from "./DocumentViewer";
 import { cn } from "@/lib/utils";
+import { fetchPOs, fetchWB, fetchGRN, fetchInvoices } from "../services/erpApi";
 
 export default function AnalyticsDashboard({ user }: { user?: any }) {
   const [isDownloading, setIsDownloading] = useState(false);
@@ -28,36 +26,76 @@ export default function AnalyticsDashboard({ user }: { user?: any }) {
     total_documents: 0
   });
 
-  const fetchData = async () => {
+  /**
+   * Fetch all ERP data and calculate consolidated KPIs and recent activity log.
+   */
+  const fetchDashboardData = async () => {
     setIsLoading(true);
     try {
-      const [txnRes, kpiRes] = await Promise.all([
-        api.get("/transactions"),
-        api.get("/analytics/kpis")
+      const [pos, wbs, grns, invoices] = await Promise.all([
+        fetchPOs(),
+        fetchWB(),
+        fetchGRN(),
+        fetchInvoices(),
       ]);
+
+      // Merge into a txn map for activity log
+      const txnMap = new Map<string, any>();
+      const processItems = (items: any[]) => {
+        items.forEach((t) => {
+          const key = t.txn_id || (t.po_number ? `TXN-${t.po_number}` : `TXN-UNLINKED`);
+          if (!txnMap.has(key)) {
+            txnMap.set(key, {
+              id: key,
+              txnId: key,
+              poNumber: t.po_number || "-",
+              wbNumber: t.wb_number || "-",
+              grnNumber: t.grn_number || "-",
+              invoiceNumber: t.invoice_number || "-",
+              date: t.date ? new Date(t.date).toLocaleDateString() : "-",
+              documents: t.documents || [],
+            });
+          } else {
+            const existing = txnMap.get(key);
+            if (t.po_number && existing.poNumber === "-") existing.poNumber = t.po_number;
+            if (t.wb_number && existing.wbNumber === "-") existing.wbNumber = t.wb_number;
+            if (t.grn_number && existing.grnNumber === "-") existing.grnNumber = t.grn_number;
+            if (t.invoice_number && existing.invoiceNumber === "-") existing.invoiceNumber = t.invoice_number;
+            // Document merging
+            const existingUrls = new Set(existing.documents.map((d: any) => d.url));
+            (t.documents || []).forEach((doc: any) => {
+              if (!existingUrls.has(doc.url)) existing.documents.push(doc);
+            });
+          }
+        });
+      };
+
+      processItems(pos);
+      processItems(wbs);
+      processItems(grns);
+      processItems(invoices);
+
+      const allMerged = Array.from(txnMap.values());
       
-      const mappedTxns = txnRes.data.map((t: any) => ({
-        id: t._id,
-        txnId: t.txn_id,
-        poNumber: t.po?.po_number || "-",
-        wbNumber: t.wb?.wb_number || "-",
-        grnNumber: t.grn?.grn_number || "-",
-        invoiceNumber: t.invoice?.invoice_number || "-",
-        date: new Date(t.created_at).toLocaleDateString(),
-        documents: t.documents || [],
-      })).slice(0, 5); // Just 5 recent for dashboard
-      
-      setTransactions(mappedTxns);
-      setKpis(kpiRes.data);
+      // Update KPIs
+      setKpis({
+        total_transactions: allMerged.length,
+        total_pos: pos.length,
+        total_invoices: invoices.length,
+        total_documents: allMerged.reduce((acc, curr) => acc + (curr.documents?.length || 0), 0)
+      });
+
+      // Show top 5 recent
+      setTransactions(allMerged.slice(0, 5));
     } catch (error) {
-      toast.error("Cloud synchronization failed");
+      toast.error("ERP data synchronization failed");
     } finally {
       setIsLoading(false);
     }
   };
 
   useEffect(() => {
-    fetchData();
+    fetchDashboardData();
   }, []);
 
   const kpiCards = [
@@ -85,7 +123,7 @@ export default function AnalyticsDashboard({ user }: { user?: any }) {
             {user?.company_name || 'Overview & Insights'}
           </p>
           <h1 className="text-2xl font-bold text-gray-900 tracking-tight">Executive Dashboard</h1>
-          <p className="text-sm text-gray-500 mt-1">Real-time status of procurement metrics and transaction logs.</p>
+          <p className="text-sm text-gray-500 mt-1">Real-time status of ERP-integrated procurement metrics.</p>
         </div>
         <div className="flex items-center gap-3">
           <button 
@@ -103,7 +141,6 @@ export default function AnalyticsDashboard({ user }: { user?: any }) {
             <span className="text-[11px] font-bold uppercase tracking-widest text-slate-700">Export Analytics</span>
           </button>
         </div>
-
       </div>
 
       {/* 2. Structured KPI Cards */}
@@ -127,25 +164,22 @@ export default function AnalyticsDashboard({ user }: { user?: any }) {
                 )}
               </h3>
               <div className="flex items-center text-[10px] font-bold px-2 py-1 rounded-md text-slate-500 bg-slate-50 uppercase tracking-widest">
-                Real-time
+                ERP Sync
               </div>
             </div>
           </div>
         ))}
       </div>
 
-      {/* 3. Table Section (Inside Card) */}
+      {/* 3. Table Section */}
       <div className="flex items-center justify-between mt-8 mb-2">
-        <h2 className="text-xs font-bold text-gray-500 uppercase tracking-widest">Recent Activity Log</h2>
-        <button className="text-[10px] font-bold text-blue-600 hover:text-blue-800 uppercase tracking-wider">
-          View All
-        </button>
+        <h2 className="text-xs font-bold text-gray-500 uppercase tracking-widest">Recent Activity (Lighthouse ERP)</h2>
       </div>
 
       {isLoading ? (
         <div className="enterprise-card py-20 flex flex-col items-center justify-center gap-4 bg-white/50 border-dashed">
           <Loader2 className="w-8 h-8 animate-spin text-blue-200" />
-          <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Indexing Transactions...</p>
+          <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Indexing ERP Records...</p>
         </div>
       ) : (
         <div className="enterprise-card p-0 overflow-hidden border border-[#e5e7eb] shadow-md">
@@ -164,4 +198,3 @@ export default function AnalyticsDashboard({ user }: { user?: any }) {
     </div>
   );
 }
-

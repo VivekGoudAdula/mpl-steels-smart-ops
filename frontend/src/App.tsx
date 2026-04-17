@@ -40,6 +40,8 @@ import LandingPage from "./components/LandingPage";
 import Auth, { UserRole } from "./components/Auth";
 import SuperAdminApp from "./components/SuperAdminApp";
 import { Toaster } from "@/components/ui/sonner";
+import api from "./lib/api";
+import { toast } from "sonner";
 
 type Module = "dashboard" | "procurement" | "weighbridge" | "grn" | "invoice" | "documents" | "comparison" | "automation" | "ai-assistant" | "smart-assistant" | "vendors" | "settings" | "user-management";
 type View = "landing" | "login" | "app";
@@ -60,7 +62,37 @@ export default function App() {
   const [activeModule, setActiveModule] = useState<Module>("dashboard");
 
   useEffect(() => {
-    // Check if we have a token on load and validate it if needed (not implemented here for simplicity)
+    const initAuth = async () => {
+      // 1. Check URL for token (e.g. http://localhost:3000/?token=...)
+      const urlParams = new URLSearchParams(window.location.search);
+      const urlToken = urlParams.get("token");
+      
+      if (urlToken) {
+        localStorage.setItem("token", urlToken);
+        // Clean up URL to hide token
+        window.history.replaceState({}, document.title, window.location.pathname);
+      }
+
+      const token = localStorage.getItem("token");
+      if (token) {
+        try {
+          const res = await api.get("/auth/me");
+          const userData = {
+            ...res.data,
+            id: res.data.id || res.data._id
+          };
+          setUser(userData);
+          setView("app");
+          setActiveModule("dashboard");
+        } catch (error) {
+          console.error("Auth initialization failed", error);
+          localStorage.removeItem("token");
+          setView("login");
+        }
+      }
+    };
+
+    initAuth();
   }, []);
 
   const handleAuthSuccess = (userData: UserData) => {

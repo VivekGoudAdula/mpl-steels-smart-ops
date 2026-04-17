@@ -4,7 +4,8 @@ Pydantic schemas for request validation and response serialization.
 
 from datetime import datetime
 from typing import Optional, List, Dict, Any
-from pydantic import BaseModel, EmailStr, Field
+from pydantic import BaseModel, EmailStr, Field, field_validator
+from bson import ObjectId
 
 
 # ──────────────────────────── Auth Schemas ────────────────────────────
@@ -25,7 +26,14 @@ class UserResponse(BaseModel):
     company_name: Optional[str] = None
     created_at: Optional[datetime] = None
 
-    model_config = {"from_attributes": True}
+    model_config = {"from_attributes": True, "populate_by_name": True}
+
+    @field_validator("id", mode="before")
+    @classmethod
+    def transform_id(cls, v: Any) -> str:
+        if isinstance(v, ObjectId):
+            return str(v)
+        return v
 
 class LoginResponse(BaseModel):
     token: str
@@ -67,7 +75,14 @@ class CompanyResponse(BaseModel):
     name: str
     created_at: datetime
     
-    model_config = {"from_attributes": True}
+    model_config = {"from_attributes": True, "populate_by_name": True}
+
+    @field_validator("id", mode="before")
+    @classmethod
+    def transform_id(cls, v: Any) -> str:
+        if isinstance(v, ObjectId):
+            return str(v)
+        return v
 
 # ──────────────────────────── Admin Overview / Dashboard Schemas ────────
 
@@ -78,7 +93,14 @@ class ActivityLogResponse(BaseModel):
     entity_id: Optional[str] = None
     created_at: datetime
     
-    model_config = {"from_attributes": True}
+    model_config = {"from_attributes": True, "populate_by_name": True}
+
+    @field_validator("id", mode="before")
+    @classmethod
+    def transform_id(cls, v: Any) -> str:
+        if isinstance(v, ObjectId):
+            return str(v)
+        return v
 
 class AdminOverviewResponse(BaseModel):
     total_companies: int
