@@ -1,10 +1,11 @@
-import React, { useState, useMemo } from "react";
-import { sampleTransactions, documentTypes, samplePOs } from "@/lib/mockData";
+import React, { useState, useMemo, useEffect } from "react";
+import api from "@/lib/api";
+import { documentTypes } from "@/lib/mockData";
 import { FilterBar } from "./shared/FilterBar";
 import { DocumentTable } from "./shared/DocumentTable";
 import DocumentViewer from "./DocumentViewer";
-
-import { Plus } from "lucide-react";
+import { toast } from "sonner";
+import { Plus, Loader2 } from "lucide-react";
 
 export default function DocumentManagement({ userRole }: { userRole?: string }) {
   const [searchQuery, setSearchQuery] = useState("");
@@ -12,9 +13,38 @@ export default function DocumentManagement({ userRole }: { userRole?: string }) 
   const [selectedType, setSelectedType] = useState("all");
   const [selectedDateRange, setSelectedDateRange] = useState("all");
   const [selectedTransaction, setSelectedTransaction] = useState<any>(null);
+  const [transactions, setTransactions] = useState<any[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+
+  const fetchTransactions = async () => {
+    setIsLoading(true);
+    try {
+      const res = await api.get("/transactions");
+      const mapped = res.data.map((t: any) => ({
+        id: t._id,
+        txnId: t.txn_id,
+        poNumber: t.po?.po_number || "-",
+        wbNumber: t.wb?.wb_number || "-",
+        grnNumber: t.grn?.grn_number || "-",
+        invoiceNumber: t.invoice?.invoice_number || "-",
+        date: new Date(t.created_at).toLocaleDateString(),
+        documents: t.documents || [],
+        vendorName: t.po?.vendor_id || "Supplier" // Assuming vendor_id is vendor name for now or fetch elsewhere
+      }));
+      setTransactions(mapped);
+    } catch (error) {
+      toast.error("Failed to fetch records");
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    fetchTransactions();
+  }, []);
 
   const filteredTransactions = useMemo(() => {
-    return sampleTransactions.filter((txn) => {
+    return transactions.filter((txn) => {
       // 1. GLOBAL SEARCH
       let matchesSearch = true;
       if (searchQuery.trim()) {
@@ -25,27 +55,15 @@ export default function DocumentManagement({ userRole }: { userRole?: string }) 
           (txn.wbNumber && txn.wbNumber.toLowerCase().includes(query)) ||
           (txn.grnNumber && txn.grnNumber.toLowerCase().includes(query)) ||
           (txn.invoiceNumber && txn.invoiceNumber.toLowerCase().includes(query)) ||
-          txn.documents.some(doc => doc.name.toLowerCase().includes(query));
+          txn.documents.some((doc: any) => doc.name.toLowerCase().includes(query));
       }
       
       const matchesPO = selectedPO === "all" || txn.poNumber === selectedPO;
-      const matchesType = selectedType === "all" || txn.documents.some(d => d.type === selectedType);
+      const matchesType = selectedType === "all" || txn.documents.some((d: any) => d.type === selectedType);
 
-      // 2. DATE FILTERS
-      let matchesDate = true;
-      if (selectedDateRange !== "all" && txn.date) {
-        const docDate = new Date(txn.date).getTime();
-        const now = new Date("2024-04-16").getTime();
-        const diffInDays = (now - docDate) / (1000 * 3600 * 24);
-        
-        if (selectedDateRange === "7d") matchesDate = diffInDays <= 7;
-        else if (selectedDateRange === "30d") matchesDate = diffInDays <= 30;
-        else if (selectedDateRange === "90d") matchesDate = diffInDays <= 90;
-      }
-
-      return matchesSearch && matchesPO && matchesType && matchesDate;
+      return matchesSearch && matchesPO && matchesType;
     });
-  }, [searchQuery, selectedPO, selectedType, selectedDateRange]);
+  }, [transactions, searchQuery, selectedPO, selectedType]);
 
   const resetFilters = () => {
     setSearchQuery("");
@@ -94,50 +112,54 @@ export default function DocumentManagement({ userRole }: { userRole?: string }) 
           selectedDateRange={selectedDateRange}
           setSelectedDateRange={setSelectedDateRange}
           resetFilters={resetFilters}
-          samplePOs={samplePOs}
+          samplePOs={Array.from(new Set(transactions.map(t => t.poNumber))).filter(p => p !== "-").map(p => ({ id: p }))}
           documentTypes={documentTypes}
           placeholder="Search by PO, WB, GRN, Invoice, Vendor..."
         />
       </div>
 
-      {/* 3. Stats & Extra Actions Row */}
-      <div className="flex items-center justify-between mt-4">
-        <div className="flex items-center gap-3">
-          <div className="bg-slate-100 px-3 py-1.5 rounded-lg border border-slate-200">
-            <span className="text-[10px] font-bold text-slate-600 uppercase tracking-widest">{filteredTransactions.length} Transactions Found</span>
-          </div>
-          
-          {(selectedPO !== "all" || selectedType !== "all" || selectedDateRange !== "all" || searchQuery) && (
-            <div className="flex gap-2 items-center">
-              <span className="w-1 h-3 bg-gray-300 rounded-full"></span>
-              <button 
-                onClick={resetFilters} 
-                className="text-[10px] font-bold text-blue-600 hover:text-blue-800 uppercase tracking-wider"
-              >
-                Clear Filters
+      {isLoading ? (
+        <div className="flex flex-col items-center justify-center py-32 space-y-4">
+          <Loader2 className="w-12 h-12 text-slate-300 animate-spin" />
+          <p className="text-slate-400 font-bold uppercase tracking-widest text-[10px]">Accessing Secure Repository...</p>
+        </div>
+      ) : (
+        <>
+          <div className="flex items-center justify-between mt-4">
+            <div className="flex items-center gap-3">
+              <div className="bg-slate-100 px-3 py-1.5 rounded-lg border border-slate-200">
+                <span className="text-[10px] font-bold text-slate-600 uppercase tracking-widest">{filteredTransactions.length} Transactions Found</span>
+              </div>
+              
+              {(selectedPO !== "all" || selectedType !== "all" || selectedDateRange !== "all" || searchQuery) && (
+                <div className="flex gap-2 items-center">
+                  <span className="w-1 h-3 bg-gray-300 rounded-full"></span>
+                  <button 
+                    onClick={resetFilters} 
+                    className="text-[10px] font-bold text-blue-600 hover:text-blue-800 uppercase tracking-wider"
+                  >
+                    Clear Filters
+                  </button>
+                </div>
+              )}
+            </div>
+            
+            <div className="flex gap-3">
+              <button className="enterprise-button-secondary px-6">
+                <span className="text-[10px] font-bold uppercase tracking-widest text-slate-600">Export CSV</span>
               </button>
             </div>
-          )}
-        </div>
-        
-        <div className="flex gap-3">
-          <button className="enterprise-button-secondary px-6">
-            <span className="text-[10px] font-bold uppercase tracking-widest text-slate-600">Export CSV</span>
-          </button>
-          <button className="enterprise-button-secondary px-6">
-            <span className="text-[10px] font-bold uppercase tracking-widest text-slate-600">View History</span>
-          </button>
-        </div>
-      </div>
+          </div>
 
-
-      {/* 4. Table Section (Inside Card) */}
-      <div className="enterprise-card p-0 overflow-hidden border border-[#e5e7eb] shadow-md">
-        <DocumentTable 
-          transactions={filteredTransactions}
-          onView={setSelectedTransaction}
-        />
-      </div>
+          <div className="enterprise-card p-0 overflow-hidden border border-[#e5e7eb] shadow-md">
+            <DocumentTable 
+              transactions={filteredTransactions}
+              onView={setSelectedTransaction}
+              onSuccess={fetchTransactions}
+            />
+          </div>
+        </>
+      )}
 
       {/* Document Viewer Workspace */}
       <DocumentViewer 

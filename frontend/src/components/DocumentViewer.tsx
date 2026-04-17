@@ -23,7 +23,8 @@ import {
   CheckCircle2,
   Lock,
   MessageSquare,
-  Minimize2
+  Minimize2,
+  Loader2
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -33,40 +34,60 @@ import {
 } from "@/components/ui/dialog";
 import { Badge } from "@/components/ui/badge";
 import { cn } from "@/lib/utils";
-import { Transaction, TransactionDocument, documentTypes } from "@/lib/mockData";
+import { documentTypes } from "@/lib/mockData";
+import api from "@/lib/api";
+import { toast } from "sonner";
 
 interface DocumentViewerProps {
-  transaction: Transaction | null;
+  transaction: any | null;
   isOpen: boolean;
   onClose: () => void;
   userRole?: string;
 }
 
 export default function DocumentViewer({ transaction: txn, isOpen, onClose, userRole }: DocumentViewerProps) {
-  const [activeDoc, setActiveDoc] = useState<TransactionDocument | null>(null);
+  const [activeDoc, setActiveDoc] = useState<any | null>(null);
   const [searchQuery, setSearchQuery] = useState("");
   const [chatMessage, setChatMessage] = useState("");
   const [zoom, setZoom] = useState(100);
   const [isFullscreen, setIsFullscreen] = useState(false);
-  const [localDocs, setLocalDocs] = useState<TransactionDocument[]>([]);
+  const [localDocs, setLocalDocs] = useState<any[]>([]);
+  const [isLoadingDocs, setIsLoadingDocs] = useState(false);
   const [uploadingFile, setUploadingFile] = useState<File | null>(null);
   const [uploadMetadata, setUploadMetadata] = useState({ type: 'PO', name: '' });
+  const [isUploading, setIsUploading] = useState(false);
 
-  // Set first document as active when opened
+  const fetchDocuments = async () => {
+    if (!txn?.id) return;
+    setIsLoadingDocs(true);
+    try {
+      const res = await api.get(`/documents?txn_id=${txn.id}`);
+      setLocalDocs(res.data);
+      if (res.data.length > 0 && !activeDoc) {
+        setActiveDoc(res.data[0]);
+      }
+    } catch (error) {
+      toast.error("Failed to load documents");
+    } finally {
+      setIsLoadingDocs(false);
+    }
+  };
+
   useEffect(() => {
-    if (isOpen && txn && txn.documents.length > 0) {
-      setActiveDoc(txn.documents[0]);
-      setLocalDocs(txn.documents);
+    if (isOpen && txn) {
+      fetchDocuments();
+    } else {
+      setActiveDoc(null);
+      setLocalDocs([]);
     }
   }, [isOpen, txn]);
 
   const filteredDocs = useMemo(() => {
-    if (!txn) return [];
     return localDocs.filter(doc => 
       doc.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
       doc.type.toLowerCase().includes(searchQuery.toLowerCase())
     );
-  }, [txn, searchQuery, localDocs]);
+  }, [searchQuery, localDocs]);
 
   if (!txn) return null;
 
@@ -76,26 +97,21 @@ export default function DocumentViewer({ transaction: txn, isOpen, onClose, user
   
   const handleDownloadActive = () => {
     if (!activeDoc) return;
-    toast.success(`Preparing secure download for ${activeDoc.name}...`);
-    // Simulated download logic
-    setTimeout(() => {
-       const url = activeDoc.url || '/xerox-scan.pdf';
-       const link = document.createElement('a');
-       link.href = url;
-       link.setAttribute('download', activeDoc.name);
-       link.setAttribute('target', '_blank');
-       document.body.appendChild(link);
-       link.click();
-       document.body.removeChild(link);
-    }, 500);
+    toast.success(`Opening ${activeDoc.name}...`);
+    window.open(activeDoc.url, '_blank');
   };
 
-  const handleRemoveDoc = (docId: string, e: React.MouseEvent) => {
+  const handleRemoveDoc = async (docId: string, e: React.MouseEvent) => {
     e.stopPropagation();
-    if (window.confirm("Are you sure you want to remove this document from the transaction?")) {
-      setLocalDocs(prev => prev.filter(d => d.id !== docId));
+    if (!window.confirm("Permanently delete this document from server?")) return;
+    
+    try {
+      await api.delete(`/documents/${docId}`);
+      toast.success("Document deleted");
       if (activeDoc?.id === docId) setActiveDoc(null);
-      toast.success("Document removed");
+      fetchDocuments();
+    } catch (error) {
+      toast.error("Failed to delete document");
     }
   };
 
@@ -108,19 +124,27 @@ export default function DocumentViewer({ transaction: txn, isOpen, onClose, user
     e.target.value = '';
   };
 
-  const finalizeUpload = () => {
-    if (!uploadingFile) return;
-    const newDoc: TransactionDocument = {
-      id: `doc-up-${Date.now()}`,
-      name: uploadMetadata.name,
-      type: uploadMetadata.type,
-      date: new Date().toISOString().split('T')[0],
-      url: URL.createObjectURL(uploadingFile),
-    };
-    setLocalDocs(prev => [...prev, newDoc]);
-    setActiveDoc(newDoc);
-    setUploadingFile(null);
-    toast.success("Document securely uploaded to enterprise portal");
+  const finalizeUpload = async () => {
+    if (!uploadingFile || !txn) return;
+    
+    setIsUploading(true);
+    const formData = new FormData();
+    formData.append("txn_id", txn.id);
+    formData.append("type", uploadMetadata.type);
+    formData.append("file", uploadingFile);
+
+    try {
+      await api.post("/documents/upload", formData, {
+        headers: { "Content-Type": "multipart/form-data" }
+      });
+      toast.success("Document securely uploaded");
+      setUploadingFile(null);
+      fetchDocuments();
+    } catch (error) {
+      toast.error("Upload failed");
+    } finally {
+      setIsUploading(false);
+    }
   };
 
   const getDocTypeColor = (type: string) => {
@@ -178,7 +202,9 @@ export default function DocumentViewer({ transaction: txn, isOpen, onClose, user
             <div className="p-4 border-b border-slate-100 space-y-3">
               <div className="flex items-center justify-between">
                 <h3 className="text-[10px] font-black uppercase tracking-[0.2em] text-slate-400">Transaction Docs</h3>
-                <RefreshCw size={12} className="text-slate-300 hover:text-indigo-600 cursor-pointer" />
+                <button onClick={fetchDocuments} disabled={isLoadingDocs}>
+                   <RefreshCw size={12} className={cn("text-slate-300 hover:text-indigo-600", isLoadingDocs && "animate-spin")} />
+                </button>
               </div>
               <div className="relative group">
                 <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-300 w-3.5 h-3.5 group-focus-within:text-indigo-500 transition-colors" />
@@ -192,18 +218,23 @@ export default function DocumentViewer({ transaction: txn, isOpen, onClose, user
             </div>
 
             <div className="flex-1 overflow-y-auto p-2 space-y-1 custom-scrollbar">
-              {filteredDocs.length === 0 ? (
+              {isLoadingDocs ? (
+                 <div className="py-20 flex flex-col items-center gap-3">
+                   <Loader2 className="w-6 h-6 text-indigo-200 animate-spin" />
+                   <span className="text-[9px] font-bold text-slate-400 uppercase tracking-widest">Fetching...</span>
+                 </div>
+              ) : filteredDocs.length === 0 ? (
                 <div className="py-10 text-center px-4">
                   <p className="text-xs text-slate-400 italic">No matching records found</p>
                 </div>
               ) : (
                 filteredDocs.map((doc) => (
                   <div 
-                    key={doc.id}
+                    key={doc._id}
                     onClick={() => setActiveDoc(doc)}
                     className={cn(
                       "group p-3 rounded-2xl cursor-pointer transition-all border border-transparent",
-                      activeDoc?.id === doc.id 
+                      activeDoc?._id === doc._id 
                         ? "bg-indigo-50 border-indigo-100 shadow-sm" 
                         : "hover:bg-slate-50"
                     )}
@@ -218,20 +249,20 @@ export default function DocumentViewer({ transaction: txn, isOpen, onClose, user
                       <div className="flex-1 min-w-0">
                         <p className={cn(
                           "text-xs font-bold truncate mb-0.5",
-                          activeDoc?.id === doc.id ? "text-indigo-950" : "text-slate-700"
+                          activeDoc?._id === doc._id ? "text-indigo-950" : "text-slate-700"
                         )}>
                           {doc.name}
                         </p>
                         <div className="flex items-center gap-2">
                           <span className="text-[9px] font-black uppercase tracking-widest text-slate-400">{doc.type}</span>
                           <span className="w-0.5 h-0.5 rounded-full bg-slate-300" />
-                          <span className="text-[9px] font-bold text-slate-400">{doc.date}</span>
+                          <span className="text-[9px] font-bold text-slate-400">{new Date(doc.created_at).toLocaleDateString()}</span>
                         </div>
                       </div>
                       <div className="flex gap-1" onClick={(e) => e.stopPropagation()}>
                         <button 
                           title="Download"
-                          onClick={() => toast.success(`Downloading ${doc.name}...`)}
+                          onClick={() => window.open(doc.url, '_blank')}
                           className="p-1 text-slate-400 hover:text-indigo-600 transition-colors"
                         >
                           <Download size={14} />
@@ -239,7 +270,7 @@ export default function DocumentViewer({ transaction: txn, isOpen, onClose, user
                         {userRole !== "viewer" && (
                           <button 
                             title="Remove Document"
-                            onClick={(e) => handleRemoveDoc(doc.id, e)}
+                            onClick={(e) => handleRemoveDoc(doc._id, e)}
                             className="p-1 text-slate-400 hover:text-red-500 transition-colors"
                           >
                             <Trash2 size={14} />
@@ -464,8 +495,15 @@ export default function DocumentViewer({ transaction: txn, isOpen, onClose, user
                 </select>
               </div>
               <div className="flex justify-end gap-3 pt-4 border-t border-gray-100">
-                <Button variant="ghost" onClick={() => setUploadingFile(null)} className="rounded-xl font-bold hover:bg-gray-100 text-gray-500">Cancel</Button>
-                <Button onClick={finalizeUpload} className="enterprise-button-primary shadow-sm h-10 px-6">Upload to Portal</Button>
+                <Button variant="ghost" disabled={isUploading} onClick={() => setUploadingFile(null)} className="rounded-xl font-bold hover:bg-gray-100 text-gray-500">Cancel</Button>
+                <Button disabled={isUploading} onClick={finalizeUpload} className="enterprise-button-primary shadow-sm h-10 px-6 min-w-[140px]">
+                   {isUploading ? (
+                      <>
+                        <Loader2 size={14} className="animate-spin mr-2" />
+                        Uploading
+                      </>
+                   ) : "Upload to Portal"}
+                </Button>
               </div>
             </div>
           </DialogContent>

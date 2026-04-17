@@ -1,6 +1,6 @@
 
 import React, { useState } from "react";
-import { Save, X, FileText, Package, CreditCard, Paperclip } from "lucide-react";
+import { Save, X, FileText, Package, CreditCard, Paperclip, Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { GeneralTab } from "../po-form/GeneralTab";
@@ -9,13 +9,16 @@ import { PaymentTab } from "../po-form/PaymentTab";
 import { DocumentsTab } from "../po-form/DocumentsTab";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
+import api from "@/lib/api";
 
 interface PurchaseOrderFormProps {
   isModal?: boolean;
   onClose?: () => void;
+  onSuccess?: () => void;
 }
 
-export default function PurchaseOrderForm({ isModal, onClose }: PurchaseOrderFormProps) {
+export default function PurchaseOrderForm({ isModal, onClose, onSuccess }: PurchaseOrderFormProps) {
+  const [isSaving, setIsSaving] = useState(false);
   const [formData, setFormData] = useState({
     poNumber: "PO-" + Math.floor(1000 + Math.random() * 9000),
     poDate: new Date(),
@@ -42,22 +45,33 @@ export default function PurchaseOrderForm({ isModal, onClose }: PurchaseOrderFor
     setFormData((prev) => ({ ...prev, [field]: value }));
   };
 
-  const handleSave = () => {
+  const handleSave = async () => {
     if (!formData.vendorId || items.length === 0) {
       toast.error("Please fill in required fields (Vendor and at least one Item)");
       return;
     }
 
-    const fullData = {
-      ...formData,
-      items,
-      files: files.map(f => f.name),
-      totalAmount: items.reduce((sum, item) => sum + item.quantity * item.rate, 0)
-    };
+    setIsSaving(true);
+    try {
+      const payload = {
+        po_number: formData.poNumber,
+        vendor_id: formData.vendorId,
+        material: items[0].name,
+        quantity: items[0].quantity,
+        rate: items[0].rate,
+      };
 
-    console.log("Saving Purchase Order:", fullData);
-    toast.success("Purchase Order created successfully!");
-    if (onClose) onClose();
+      await api.post("/transactions", payload);
+      toast.success("Purchase Order created successfully!");
+      
+      if (onSuccess) onSuccess();
+      else if (onClose) onClose();
+    } catch (error) {
+      console.error("Save error:", error);
+      toast.error("Failed to create Purchase Order. Please try again.");
+    } finally {
+      setIsSaving(false);
+    }
   };
 
   return (
@@ -80,10 +94,20 @@ export default function PurchaseOrderForm({ isModal, onClose }: PurchaseOrderFor
           </button>
           <button
             onClick={handleSave}
-            className="enterprise-button-primary px-8 flex items-center gap-2"
+            disabled={isSaving}
+            className="enterprise-button-primary px-8 flex items-center gap-2 disabled:opacity-70 disabled:cursor-not-allowed"
           >
-            <Save className="w-4 h-4" />
-            <span className="text-[11px] font-bold uppercase tracking-widest">Save Purchase Order</span>
+            {isSaving ? (
+              <>
+                <Loader2 className="w-4 h-4 animate-spin" />
+                <span className="text-[11px] font-bold uppercase tracking-widest">Saving...</span>
+              </>
+            ) : (
+              <>
+                <Save className="w-4 h-4" />
+                <span className="text-[11px] font-bold uppercase tracking-widest">Save Purchase Order</span>
+              </>
+            )}
           </button>
         </div>
 

@@ -10,7 +10,8 @@ import {
   Upload, 
   Trash2, 
   AlertCircle,
-  CheckCircle2
+  CheckCircle2,
+  Loader2
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -24,18 +25,22 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { toast } from "sonner";
-import { samplePOs } from "@/lib/mockData";
+import api from "@/lib/api";
 import { cn } from "@/lib/utils";
 
 interface WeighbridgeFormProps {
   isModal?: boolean;
   onClose?: () => void;
+  onSuccess?: () => void;
 }
 
-export default function WeighbridgeForm({ isModal, onClose }: WeighbridgeFormProps) {
+export default function WeighbridgeForm({ isModal, onClose, onSuccess }: WeighbridgeFormProps) {
+  const [isSaving, setIsSaving] = useState(false);
+  const [isLoadingTxns, setIsLoadingTxns] = useState(true);
+  const [transactions, setTransactions] = useState<any[]>([]);
   const [formData, setFormData] = useState({
     wbNumber: "WB-" + Math.floor(10000 + Math.random() * 90000),
-    poId: "",
+    transactionId: "",
     vehicleNumber: "",
     driverName: "",
     grossWeight: 0,
@@ -45,29 +50,44 @@ export default function WeighbridgeForm({ isModal, onClose }: WeighbridgeFormPro
     vendorName: "",
   });
 
-  const [selectedPO, setSelectedPO] = useState<any>(null);
+  const [selectedTxn, setSelectedTxn] = useState<any>(null);
   const [file, setFile] = useState<File | null>(null);
 
   useEffect(() => {
-    if (formData.poId) {
-      const po = samplePOs.find(p => p.id === formData.poId);
-      if (po) {
-        setSelectedPO(po);
+    const fetchTransactions = async () => {
+      try {
+        const res = await api.get("/transactions");
+        // Filter transactions that have a PO but no WB yet
+        setTransactions(res.data.filter((t: any) => t.po && !t.wb));
+      } catch (error) {
+        toast.error("Failed to load transactions");
+      } finally {
+        setIsLoadingTxns(false);
+      }
+    };
+    fetchTransactions();
+  }, []);
+
+  useEffect(() => {
+    if (formData.transactionId) {
+      const txn = transactions.find(t => t._id === formData.transactionId);
+      if (txn) {
+        setSelectedTxn(txn);
         setFormData(prev => ({
           ...prev,
-          vendorName: po.vendorName,
-          materialType: po.materialType
+          vendorName: "Link to PO: " + txn.po.po_number,
+          materialType: txn.po.material
         }));
       }
     } else {
-      setSelectedPO(null);
+      setSelectedTxn(null);
       setFormData(prev => ({
         ...prev,
         vendorName: "",
         materialType: ""
       }));
     }
-  }, [formData.poId]);
+  }, [formData.transactionId, transactions]);
 
   const netWeight = formData.grossWeight - formData.tareWeight;
   const isNegativeWeight = netWeight < 0;
@@ -76,13 +96,31 @@ export default function WeighbridgeForm({ isModal, onClose }: WeighbridgeFormPro
     setFormData(prev => ({ ...prev, [field]: value }));
   };
 
-  const handleSave = () => {
-    if (!formData.poId || !formData.vehicleNumber || formData.grossWeight <= 0) {
-      toast.error("Please fill in all required fields (PO, Vehicle, and Gross Weight)");
+  const handleSave = async () => {
+    if (!formData.transactionId || !formData.vehicleNumber || formData.grossWeight <= 0) {
+      toast.error("Please fill in all required fields (Transaction, Vehicle, and Gross Weight)");
       return;
     }
-    toast.success("Weighbridge Entry saved successfully!");
-    if (onClose) onClose();
+
+    setIsSaving(true);
+    try {
+      const payload = {
+        wb_number: formData.wbNumber,
+        vehicle_number: formData.vehicleNumber,
+        gross: formData.grossWeight,
+        tare: formData.tareWeight,
+        net: netWeight,
+      };
+
+      await api.post(`/transactions/${formData.transactionId}/weighbridge`, payload);
+      toast.success("Weighbridge Entry saved successfully!");
+      if (onSuccess) onSuccess();
+      else if (onClose) onClose();
+    } catch (error) {
+      toast.error("Failed to save Weighbridge entry");
+    } finally {
+      setIsSaving(false);
+    }
   };
 
   return (
@@ -102,10 +140,20 @@ export default function WeighbridgeForm({ isModal, onClose }: WeighbridgeFormPro
           </button>
           <button 
             onClick={handleSave} 
-            className="enterprise-button-primary h-12 px-8 flex items-center gap-2"
+            disabled={isSaving}
+            className="enterprise-button-primary h-12 px-8 flex items-center gap-2 disabled:opacity-70"
           >
-            <Save className="w-4 h-4" />
-            <span className="text-[11px] font-bold uppercase tracking-widest text-white">Save Entry</span>
+            {isSaving ? (
+              <>
+                <Loader2 className="w-4 h-4 animate-spin text-white" />
+                <span className="text-[11px] font-bold uppercase tracking-widest text-white">Saving...</span>
+              </>
+            ) : (
+              <>
+                <Save className="w-4 h-4 text-white" />
+                <span className="text-[11px] font-bold uppercase tracking-widest text-white">Save Entry</span>
+              </>
+            )}
           </button>
         </div>
 
@@ -121,30 +169,33 @@ export default function WeighbridgeForm({ isModal, onClose }: WeighbridgeFormPro
               </h3>
             </div>
             <div className="space-y-6">
-              <FormGroup label="Select Purchase Order">
-                <Select value={formData.poId} onValueChange={(val) => updateField("poId", val)}>
+              <FormGroup label="Select Active Transaction">
+                <Select value={formData.transactionId} onValueChange={(val) => updateField("transactionId", val)}>
                   <SelectTrigger className="enterprise-input w-full">
-                    <SelectValue placeholder="Choose a PO to link" />
+                    <SelectValue placeholder={isLoadingTxns ? "Loading transactions..." : "Choose a transaction to link"} />
                   </SelectTrigger>
                   <SelectContent>
-                    {samplePOs.map((po) => (
-                      <SelectItem key={po.id} value={po.id}>
-                        {po.id} – {po.vendorName}
+                    {transactions.map((t) => (
+                      <SelectItem key={t._id} value={t._id}>
+                        {t.txn_id} (PO: {t.po.po_number})
                       </SelectItem>
                     ))}
+                    {transactions.length === 0 && !isLoadingTxns && (
+                      <SelectItem value="none" disabled>No pending transactions found</SelectItem>
+                    )}
                   </SelectContent>
                 </Select>
               </FormGroup>
 
-              {selectedPO && (
+              {selectedTxn && (
                 <div className="grid grid-cols-2 gap-6 pt-2">
                   <div className="enterprise-card bg-gray-50 border-gray-200">
-                    <p className="text-[10px] text-gray-500 uppercase font-bold tracking-wider mb-1">Vendor Name</p>
-                    <p className="font-bold text-gray-900 text-sm tracking-tight">{selectedPO.vendorName}</p>
+                    <p className="text-[10px] text-gray-500 uppercase font-bold tracking-wider mb-1">PO Details</p>
+                    <p className="font-bold text-gray-900 text-sm tracking-tight">{selectedTxn.po.po_number} - {selectedTxn.po.material}</p>
                   </div>
                   <div className="enterprise-card bg-gray-50 border-gray-200">
-                    <p className="text-[10px] text-gray-500 uppercase font-bold tracking-wider mb-1">Material Information</p>
-                    <p className="font-bold text-gray-900 text-sm tracking-tight">{selectedPO.materialType}</p>
+                    <p className="text-[10px] text-gray-500 uppercase font-bold tracking-wider mb-1">Status</p>
+                    <p className="font-bold text-emerald-600 text-[10px] uppercase tracking-widest mt-1">Ready for Weighbridge</p>
                   </div>
                 </div>
               )}

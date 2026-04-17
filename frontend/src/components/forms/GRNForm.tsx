@@ -12,7 +12,8 @@ import {
   AlertTriangle,
   ArrowRight,
   Eye,
-  Info
+  Info,
+  Loader2
 } from "lucide-react";
 import DocumentViewer from "../DocumentViewer";
 import { Button } from "@/components/ui/button";
@@ -31,19 +32,22 @@ import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
 import { Separator } from "@/components/ui/separator";
 import { toast } from "sonner";
-import { samplePOs, sampleWBEntries } from "@/lib/mockData";
+import api from "@/lib/api";
 import { cn } from "@/lib/utils";
 
 interface GRNFormProps {
   isModal?: boolean;
   onClose?: () => void;
+  onSuccess?: () => void;
 }
 
-export default function GRNForm({ isModal, onClose }: GRNFormProps) {
+export default function GRNForm({ isModal, onClose, onSuccess }: GRNFormProps) {
+  const [isSaving, setIsSaving] = useState(false);
+  const [isLoadingTxns, setIsLoadingTxns] = useState(true);
+  const [transactions, setTransactions] = useState<any[]>([]);
   const [formData, setFormData] = useState({
     grnNumber: "GRN-" + Math.floor(10000 + Math.random() * 90000),
-    poId: "",
-    wbId: "",
+    transactionId: "",
     receivedQty: 0,
     acceptedQty: 0,
     rejectedQty: 0,
@@ -54,43 +58,42 @@ export default function GRNForm({ isModal, onClose }: GRNFormProps) {
     expectedQty: 0,
   });
 
-  const [selectedPO, setSelectedPO] = useState<any>(null);
-  const [selectedWB, setSelectedWB] = useState<any>(null);
+  const [selectedTxn, setSelectedTxn] = useState<any>(null);
   const [file, setFile] = useState<File | null>(null);
-  const [isViewerOpen, setIsViewerOpen] = useState(false);
-
-  const filteredWBs = sampleWBEntries.filter(wb => wb.poId === formData.poId);
 
   useEffect(() => {
-    if (formData.poId) {
-      const po = samplePOs.find(p => p.id === formData.poId);
-      if (po) {
-        setSelectedPO(po);
+    const fetchTransactions = async () => {
+      try {
+        const res = await api.get("/transactions");
+        // Transactions with WB but no GRN
+        setTransactions(res.data.filter((t: any) => t.wb && !t.grn));
+      } catch (error) {
+        toast.error("Failed to load transactions");
+      } finally {
+        setIsLoadingTxns(false);
+      }
+    };
+    fetchTransactions();
+  }, []);
+
+  useEffect(() => {
+    if (formData.transactionId) {
+      const txn = transactions.find(t => t._id === formData.transactionId);
+      if (txn) {
+        setSelectedTxn(txn);
         setFormData(prev => ({
           ...prev,
-          vendorName: po.vendorName,
-          materialType: po.materialType,
-          expectedQty: po.quantity,
-          wbId: ""
+          vendorName: "PO Linked: " + txn.po.po_number,
+          materialType: txn.po.material,
+          expectedQty: txn.po.quantity,
+          receivedQty: txn.wb.net,
+          acceptedQty: txn.wb.net
         }));
       }
     } else {
-      setSelectedPO(null);
-      setFormData(prev => ({ ...prev, vendorName: "", materialType: "", expectedQty: 0, wbId: "" }));
+      setSelectedTxn(null);
     }
-  }, [formData.poId]);
-
-  useEffect(() => {
-    if (formData.wbId) {
-      const wb = sampleWBEntries.find(w => w.id === formData.wbId);
-      if (wb) {
-        setSelectedWB(wb);
-        setFormData(prev => ({ ...prev, receivedQty: wb.netWeight, acceptedQty: wb.netWeight, rejectedQty: 0 }));
-      }
-    } else {
-      setSelectedWB(null);
-    }
-  }, [formData.wbId]);
+  }, [formData.transactionId, transactions]);
 
   useEffect(() => {
     const rejected = Math.max(0, formData.receivedQty - formData.acceptedQty);
@@ -103,16 +106,33 @@ export default function GRNForm({ isModal, onClose }: GRNFormProps) {
     setFormData(prev => ({ ...prev, [field]: value }));
   };
 
-  const handleSave = () => {
-    if (!formData.poId || !formData.wbId || formData.receivedQty <= 0) {
-      toast.error("Please ensure PO and WB are selected and quantities are valid.");
+  const handleSave = async () => {
+    if (!formData.transactionId || formData.receivedQty <= 0) {
+      toast.error("Please ensure a transaction is selected and quantities are valid.");
       return;
     }
-    toast.success("GRN created and verified successfully!");
-    if (onClose) onClose();
+
+    setIsSaving(true);
+    try {
+      const payload = {
+        grn_number: formData.grnNumber,
+        accepted_qty: formData.acceptedQty,
+        rejected_qty: formData.rejectedQty,
+        status: formData.qualityStatus,
+      };
+
+      await api.post(`/transactions/${formData.transactionId}/grn`, payload);
+      toast.success("GRN created and verified successfully!");
+      if (onSuccess) onSuccess();
+      else if (onClose) onClose();
+    } catch (error) {
+      toast.error("Failed to create GRN");
+    } finally {
+      setIsSaving(false);
+    }
   };
 
-  const isQtyMismatch = selectedWB && formData.receivedQty > selectedWB.netWeight;
+  const isQtyMismatch = selectedTxn?.wb && formData.receivedQty > selectedTxn.wb.net;
   const hasRejections = formData.rejectedQty > 0;
 
   return (
@@ -132,10 +152,20 @@ export default function GRNForm({ isModal, onClose }: GRNFormProps) {
           </button>
           <button 
             onClick={handleSave} 
-            className="enterprise-button-primary h-12 px-8 flex items-center gap-2"
+            disabled={isSaving}
+            className="enterprise-button-primary h-12 px-8 flex items-center gap-2 disabled:opacity-70"
           >
-            <Save className="w-4 h-4" />
-            <span className="text-[11px] font-bold uppercase tracking-widest text-white">Verify GRN</span>
+            {isSaving ? (
+              <>
+                <Loader2 className="w-4 h-4 animate-spin text-white" />
+                <span className="text-[11px] font-bold uppercase tracking-widest text-white">Verifying...</span>
+              </>
+            ) : (
+              <>
+                <Save className="w-4 h-4 text-white" />
+                <span className="text-[11px] font-bold uppercase tracking-widest text-white">Verify GRN</span>
+              </>
+            )}
           </button>
         </div>
 
@@ -143,13 +173,13 @@ export default function GRNForm({ isModal, onClose }: GRNFormProps) {
 
       <div className="mb-10 bg-slate-50/50 p-6 rounded-2xl border border-slate-100 flex flex-col gap-5">
         <div className="flex items-center justify-between px-4">
-          <Step num={1} label="Link Purchase Order" active={!!formData.poId} />
+          <Step num={1} label="Link Transaction" active={!!formData.transactionId} />
           <ArrowRight className="w-4 h-4 text-slate-300" />
-          <Step num={2} label="Link Weighbridge" active={!!formData.wbId} />
+          <Step num={2} label="Analyze WB Data" active={!!selectedTxn} />
           <ArrowRight className="w-4 h-4 text-slate-300" />
           <Step num={3} label="Quantity Verification" active={formData.receivedQty > 0} />
         </div>
-        <Progress value={formData.poId ? (formData.wbId ? (formData.receivedQty > 0 ? 100 : 66) : 33) : 0} className="h-2.5 rounded-full bg-slate-200" />
+        <Progress value={formData.transactionId ? (formData.receivedQty > 0 ? 100 : 50) : 0} className="h-2.5 rounded-full bg-slate-200" />
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-4 gap-8 pb-10">
@@ -162,26 +192,31 @@ export default function GRNForm({ isModal, onClose }: GRNFormProps) {
               </h3>
             </div>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              <FormGroup label="Purchase Order">
-                <Select value={formData.poId} onValueChange={(val) => updateField("poId", val)}>
+              <FormGroup label="Select Active Transaction">
+                <Select value={formData.transactionId} onValueChange={(val) => updateField("transactionId", val)}>
                   <SelectTrigger className="enterprise-input w-full">
-                    <SelectValue placeholder="Link a PO Reference" />
+                    <SelectValue placeholder={isLoadingTxns ? "Syncing transactions..." : "Link a Transaction Reference"} />
                   </SelectTrigger>
                   <SelectContent>
-                    {samplePOs.map(po => (<SelectItem key={po.id} value={po.id}>{po.id} – {po.vendorName}</SelectItem>))}
+                    {transactions.map(t => (
+                      <SelectItem key={t._id} value={t._id}>
+                        {t.txn_id} (PO: {t.po.po_number})
+                      </SelectItem>
+                    ))}
+                    {transactions.length === 0 && !isLoadingTxns && (
+                      <SelectItem value="none" disabled>No transactions awaiting GRN</SelectItem>
+                    )}
                   </SelectContent>
                 </Select>
               </FormGroup>
-              <FormGroup label="Weighbridge Entry">
-                <Select value={formData.wbId} onValueChange={(val) => updateField("wbId", val)} disabled={!formData.poId}>
-                  <SelectTrigger className="enterprise-input w-full">
-                    <SelectValue placeholder={formData.poId ? "Link a Weight Slip" : "Select PO reference first"} />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {filteredWBs.map(wb => (<SelectItem key={wb.id} value={wb.id}>{wb.id} – {wb.vehicleNumber} ({wb.netWeight}T)</SelectItem>))}
-                  </SelectContent>
-                </Select>
-              </FormGroup>
+              <div className="flex flex-col justify-end">
+                {selectedTxn && (
+                   <div className="bg-emerald-50 border border-emerald-100 p-3 rounded-lg flex items-center gap-3">
+                     <CheckCircle2 className="w-4 h-4 text-emerald-600" />
+                     <span className="text-[10px] font-bold text-emerald-800 uppercase tracking-widest">WB entry linked: {selectedTxn.wb.wb_number}</span>
+                   </div>
+                )}
+              </div>
             </div>
           </div>
 
@@ -249,7 +284,7 @@ export default function GRNForm({ isModal, onClose }: GRNFormProps) {
             <div className="space-y-6">
               <SummaryRow label="PO Allocated Qty" value={formData.expectedQty} unit="MT" />
               <Separator className="bg-white/10" />
-              <SummaryRow label="Weighbridge Net" value={selectedWB?.netWeight || 0} unit="MT" color="text-blue-300" />
+              <SummaryRow label="Weighbridge Net" value={selectedTxn?.wb?.net || 0} unit="MT" color="text-blue-300" />
               <Separator className="bg-white/10" />
               <SummaryRow label="GRN Record Qty" value={formData.receivedQty} unit="MT" color={isQtyMismatch ? "text-yellow-400" : "text-green-400"} />
             </div>

@@ -8,7 +8,8 @@ import {
   Scale,
   Package,
   FileSpreadsheet,
-  Plus
+  Plus,
+  Loader2
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
@@ -30,35 +31,49 @@ import { cn } from "@/lib/utils";
 import { Transaction, documentTypes } from "@/lib/mockData";
 import { toast } from "sonner";
 
+import api from "@/lib/api";
+
 interface DocumentTableProps {
-  transactions: Transaction[];
-  onView: (transaction: Transaction) => void;
-  onUpload?: (transaction: Transaction) => void;
+  transactions: any[];
+  onView: (transaction: any) => void;
+  onUpload?: (transaction: any) => void;
+  onSuccess?: () => void;
 }
 
 export const DocumentTable: React.FC<DocumentTableProps> = ({ 
   transactions, 
   onView,
-  onUpload
+  onUpload,
+  onSuccess
 }) => {
   const [deleteConfirmOpen, setDeleteConfirmOpen] = useState(false);
-  const [pendingDeleteTxn, setPendingDeleteTxn] = useState<string | null>(null);
+  const [pendingDeleteTxn, setPendingDeleteTxn] = useState<any>(null);
+  const [isDeleting, setIsDeleting] = useState(false);
 
   const getDocTypeColor = (type: string) => {
     const config = documentTypes.find(t => t.id === type);
     return config?.color || "bg-slate-100 text-slate-700";
   };
 
-  const initiateDelete = (txnId: string) => {
-    setPendingDeleteTxn(txnId);
+  const initiateDelete = (txn: any) => {
+    setPendingDeleteTxn(txn);
     setDeleteConfirmOpen(true);
   };
 
-  const confirmDelete = () => {
-    if (pendingDeleteTxn) {
-      toast.error(`Transaction ${pendingDeleteTxn} permanently deleted`);
+  const confirmDelete = async () => {
+    if (!pendingDeleteTxn) return;
+    
+    setIsDeleting(true);
+    try {
+      await api.delete(`/transactions/${pendingDeleteTxn.id}`);
+      toast.success(`Transaction ${pendingDeleteTxn.txnId} archived successfully`);
       setDeleteConfirmOpen(false);
       setPendingDeleteTxn(null);
+      if (onSuccess) onSuccess();
+    } catch (error) {
+      toast.error("Failed to archive transaction");
+    } finally {
+      setIsDeleting(false);
     }
   };
 
@@ -146,7 +161,7 @@ export const DocumentTable: React.FC<DocumentTableProps> = ({
                     <button 
                       title="Archive"
                       className="p-2 text-slate-400 hover:text-red-600 hover:bg-red-50 rounded-xl transition-all h-9 w-9 flex items-center justify-center outline-none"
-                      onClick={() => initiateDelete(txn.txnId)}
+                      onClick={() => initiateDelete(txn)}
                     >
                       <Trash2 className="w-4.5 h-4.5" />
                     </button>
@@ -166,12 +181,19 @@ export const DocumentTable: React.FC<DocumentTableProps> = ({
             </div>
             <DialogTitle className="text-xl font-black text-slate-900 tracking-tight">Archive Transaction?</DialogTitle>
             <p className="text-sm text-slate-500 mt-2 font-medium px-4">
-              You are about to archive transaction <b className="text-slate-900">{pendingDeleteTxn}</b>. This will hide all linked files from the primary repository.
+              You are about to archive transaction <b className="text-slate-900">{pendingDeleteTxn?.txnId}</b>. This will hide all linked files from the primary repository.
             </p>
           </DialogHeader>
           <DialogFooter className="sm:justify-center gap-3 mt-6">
-            <Button variant="outline" onClick={() => setDeleteConfirmOpen(false)} className="rounded-2xl font-bold text-[10px] h-12 px-8 uppercase tracking-widest border-slate-200">Cancel</Button>
-            <Button onClick={confirmDelete} className="bg-red-600 text-white hover:bg-red-700 rounded-2xl font-bold text-[10px] h-12 px-10 uppercase tracking-widest shadow-xl shadow-red-200">Archive Record</Button>
+            <Button variant="outline" disabled={isDeleting} onClick={() => setDeleteConfirmOpen(false)} className="rounded-2xl font-bold text-[10px] h-12 px-8 uppercase tracking-widest border-slate-200">Cancel</Button>
+            <Button disabled={isDeleting} onClick={confirmDelete} className="bg-red-600 text-white hover:bg-red-700 rounded-2xl font-bold text-[10px] h-12 px-10 uppercase tracking-widest shadow-xl shadow-red-200 min-w-[150px]">
+               {isDeleting ? (
+                 <>
+                   <Loader2 className="w-4 h-4 animate-spin mr-2" />
+                   Archiving...
+                 </>
+               ) : "Archive Record"}
+            </Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>

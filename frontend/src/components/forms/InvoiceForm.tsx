@@ -13,7 +13,8 @@ import {
   IndianRupee,
   ArrowUpRight,
   ShieldCheck,
-  CheckCircle2
+  CheckCircle2,
+  Loader2
 } from "lucide-react";
 import DocumentViewer from "../DocumentViewer";
 import { Button } from "@/components/ui/button";
@@ -30,20 +31,23 @@ import {
 import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
 import { toast } from "sonner";
-import { samplePOs, sampleGRNEntries } from "@/lib/mockData";
+import api from "@/lib/api";
 import { cn } from "@/lib/utils";
 
 interface InvoiceFormProps {
   isModal?: boolean;
   onClose?: () => void;
+  onSuccess?: () => void;
 }
 
-export default function InvoiceForm({ isModal, onClose }: InvoiceFormProps) {
+export default function InvoiceForm({ isModal, onClose, onSuccess }: InvoiceFormProps) {
+  const [isSaving, setIsSaving] = useState(false);
+  const [isLoadingTxns, setIsLoadingTxns] = useState(true);
+  const [transactions, setTransactions] = useState<any[]>([]);
   const [formData, setFormData] = useState({
     invoiceNumber: "",
     invoiceDate: new Date().toISOString().slice(0, 10),
-    poId: "",
-    grnId: "",
+    transactionId: "",
     baseAmount: 0,
     taxPercent: 18,
     taxAmount: 0,
@@ -55,38 +59,41 @@ export default function InvoiceForm({ isModal, onClose }: InvoiceFormProps) {
     acceptedQty: 0,
   });
 
-  const [selectedPO, setSelectedPO] = useState<any>(null);
-  const [selectedGRN, setSelectedGRN] = useState<any>(null);
+  const [selectedTxn, setSelectedTxn] = useState<any>(null);
   const [file, setFile] = useState<File | null>(null);
-  const [isViewerOpen, setIsViewerOpen] = useState(false);
-
-  const filteredGRNs = sampleGRNEntries.filter(grn => grn.poId === formData.poId);
 
   useEffect(() => {
-    if (formData.poId) {
-      const po = samplePOs.find(p => p.id === formData.poId);
-      if (po) {
-        setSelectedPO(po);
-        setFormData(prev => ({ ...prev, vendorName: po.vendorName, grnId: "" }));
+    const fetchTransactions = async () => {
+      try {
+        const res = await api.get("/transactions");
+        // Transactions with GRN but no Invoice
+        setTransactions(res.data.filter((t: any) => t.grn && !t.invoice));
+      } catch (error) {
+        toast.error("Failed to load transactions");
+      } finally {
+        setIsLoadingTxns(false);
       }
-    } else {
-      setSelectedPO(null);
-      setFormData(prev => ({ ...prev, vendorName: "", grnId: "" }));
-    }
-  }, [formData.poId]);
+    };
+    fetchTransactions();
+  }, []);
 
   useEffect(() => {
-    if (formData.grnId) {
-      const grn = sampleGRNEntries.find(g => g.id === formData.grnId);
-      if (grn) {
-        setSelectedGRN(grn);
-        setFormData(prev => ({ ...prev, materialType: grn.materialType, acceptedQty: grn.acceptedQty }));
+    if (formData.transactionId) {
+      const txn = transactions.find(t => t._id === formData.transactionId);
+      if (txn) {
+        setSelectedTxn(txn);
+        setFormData(prev => ({
+          ...prev,
+          vendorName: "Linked View: " + txn.txn_id,
+          materialType: txn.po.material,
+          acceptedQty: txn.grn.accepted_qty,
+          baseAmount: txn.grn.accepted_qty * txn.po.rate // Autofill estimated amount
+        }));
       }
     } else {
-      setSelectedGRN(null);
-      setFormData(prev => ({ ...prev, materialType: "", acceptedQty: 0 }));
+      setSelectedTxn(null);
     }
-  }, [formData.grnId]);
+  }, [formData.transactionId, transactions]);
 
   useEffect(() => {
     const tax = (formData.baseAmount * formData.taxPercent) / 100;
@@ -98,13 +105,31 @@ export default function InvoiceForm({ isModal, onClose }: InvoiceFormProps) {
     setFormData(prev => ({ ...prev, [field]: value }));
   };
 
-  const handleSave = () => {
-    if (!formData.poId || !formData.grnId || !formData.invoiceNumber || formData.baseAmount <= 0) {
-      toast.error("Please fill in all required fields (PO, GRN, Invoice #, and Base Amount)");
+  const handleSave = async () => {
+    if (!formData.transactionId || !formData.invoiceNumber || formData.baseAmount <= 0) {
+      toast.error("Please fill in all required fields (Transaction, Invoice #, and Base Amount)");
       return;
     }
-    toast.success("Invoice saved and posted successfully!");
-    if (onClose) onClose();
+
+    setIsSaving(true);
+    try {
+      const payload = {
+        invoice_number: formData.invoiceNumber,
+        amount: formData.baseAmount,
+        tax: formData.taxAmount,
+        total: formData.totalAmount,
+        status: formData.paymentStatus,
+      };
+
+      await api.post(`/transactions/${formData.transactionId}/invoice`, payload);
+      toast.success("Invoice saved and posted successfully!");
+      if (onSuccess) onSuccess();
+      else if (onClose) onClose();
+    } catch (error) {
+      toast.error("Failed to post invoice");
+    } finally {
+      setIsSaving(false);
+    }
   };
 
   return (
@@ -124,10 +149,20 @@ export default function InvoiceForm({ isModal, onClose }: InvoiceFormProps) {
           </button>
           <button
             onClick={handleSave}
-            className="enterprise-button-primary h-12 px-8 flex items-center gap-2"
+            disabled={isSaving}
+            className="enterprise-button-primary h-12 px-8 flex items-center gap-2 disabled:opacity-70"
           >
-            <Save className="w-4 h-4" />
-            <span className="text-[11px] font-bold uppercase tracking-widest text-white">Post Invoice</span>
+            {isSaving ? (
+              <>
+                <Loader2 className="w-4 h-4 animate-spin text-white" />
+                <span className="text-[11px] font-bold uppercase tracking-widest text-white">Posting...</span>
+              </>
+            ) : (
+              <>
+                <Save className="w-4 h-4 text-white" />
+                <span className="text-[11px] font-bold uppercase tracking-widest text-white">Post Invoice</span>
+              </>
+            )}
           </button>
         </div>
 
@@ -143,30 +178,31 @@ export default function InvoiceForm({ isModal, onClose }: InvoiceFormProps) {
               </h3>
             </div>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              <FormGroup label="Purchase Order">
-                <Select value={formData.poId} onValueChange={(val) => updateField("poId", val)}>
+              <FormGroup label="Link Active Transaction">
+                <Select value={formData.transactionId} onValueChange={(val) => updateField("transactionId", val)}>
                   <SelectTrigger className="enterprise-input w-full">
-                    <SelectValue placeholder="Select PO Reference" />
+                    <SelectValue placeholder={isLoadingTxns ? "Scanning transactions..." : "Select Transaction Reference"} />
                   </SelectTrigger>
                   <SelectContent>
-                    {samplePOs.map(po => (<SelectItem key={po.id} value={po.id}>
-                      {po.id} – {po.vendorName}
-                    </SelectItem>))}
+                    {transactions.map(t => (
+                      <SelectItem key={t._id} value={t._id}>
+                        {t.txn_id} (PO: {t.po.po_number})
+                      </SelectItem>
+                    ))}
+                    {transactions.length === 0 && !isLoadingTxns && (
+                      <SelectItem value="none" disabled>No transactions awaiting invoice</SelectItem>
+                    )}
                   </SelectContent>
                 </Select>
               </FormGroup>
-              <FormGroup label="">
-                <Select value={formData.grnId} onValueChange={(val) => updateField("grnId", val)} disabled={!formData.poId}>
-                  <SelectTrigger className="enterprise-input w-full">
-                    <SelectValue placeholder={formData.poId ? "Link Verified GRN" : "Select PO first"} />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {filteredGRNs.map(grn => (<SelectItem key={grn.id} value={grn.id}>
-                      {grn.id} – {grn.materialType}
-                    </SelectItem>))}
-                  </SelectContent>
-                </Select>
-              </FormGroup>
+              <div className="flex flex-col justify-end">
+                {selectedTxn && (
+                   <div className="bg-blue-50 border border-blue-100 p-3 rounded-lg flex items-center gap-3">
+                     <CheckCircle2 className="w-4 h-4 text-blue-600" />
+                     <span className="text-[10px] font-bold text-blue-800 uppercase tracking-widest">GRN linked: {selectedTxn.grn.grn_number} ({selectedTxn.grn.accepted_qty}T)</span>
+                   </div>
+                )}
+              </div>
             </div>
           </div>
 
@@ -259,7 +295,7 @@ export default function InvoiceForm({ isModal, onClose }: InvoiceFormProps) {
           <div className="enterprise-card bg-gray-50 border-gray-200">
             <h3 className="text-xs font-bold uppercase tracking-wider text-gray-500 mb-6">Audit & Compliance</h3>
             <div className="space-y-6">
-              <AuditRow label="Linked PO Value" value={selectedPO?.totalAmount || 0} isCurrency />
+              <AuditRow label="Linked PO Value" value={(selectedTxn?.po?.quantity * selectedTxn?.po?.rate) || 0} isCurrency />
               <Separator className="bg-gray-200" />
               <AuditRow label="Accepted Receipt MT" value={formData.acceptedQty} unit="TONS" />
               <Separator className="bg-gray-200" />

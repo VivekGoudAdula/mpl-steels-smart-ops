@@ -1,16 +1,17 @@
 
-import React, { useState, useMemo } from "react";
-import { Plus } from "lucide-react";
+import React, { useState, useMemo, useEffect } from "react";
+import { Plus, Loader2 } from "lucide-react";
 import {
   Dialog,
   DialogContent,
   DialogTrigger
 } from "@/components/ui/dialog";
-import { sampleTransactions, samplePOs } from "@/lib/mockData";
+import api from "@/lib/api";
 import { DocumentTable } from "./shared/DocumentTable";
 import { FilterBar } from "./shared/FilterBar";
 import DocumentViewer from "./DocumentViewer";
 import PurchaseOrderForm from "./forms/PurchaseOrderForm";
+import { toast } from "sonner";
 
 export default function ProcurementModule() {
   const [searchQuery, setSearchQuery] = useState("");
@@ -18,9 +19,38 @@ export default function ProcurementModule() {
   const [selectedDateRange, setSelectedDateRange] = useState("all");
   const [selectedTransaction, setSelectedTransaction] = useState<any>(null);
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
+  const [transactions, setTransactions] = useState<any[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+
+  const fetchTransactions = async () => {
+    setIsLoading(true);
+    try {
+      const res = await api.get("/transactions");
+      // Map backend structure to what the table expects
+      const mapped = res.data.map((t: any) => ({
+        id: t._id,
+        txnId: t.txn_id,
+        poNumber: t.po?.po_number || "-",
+        wbNumber: t.wb?.wb_number || "-",
+        grnNumber: t.grn?.grn_number || "-",
+        invoiceNumber: t.invoice?.invoice_number || "-",
+        date: new Date(t.created_at).toLocaleDateString(),
+        documents: t.documents || [],
+      }));
+      setTransactions(mapped);
+    } catch (error) {
+      toast.error("Failed to fetch transactions");
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    fetchTransactions();
+  }, []);
 
   const filteredTransactions = useMemo(() => {
-    return sampleTransactions.filter((txn) => {
+    return transactions.filter((txn) => {
       // 1. GLOBAL SEARCH
       let matchesSearch = true;
       if (searchQuery.trim()) {
@@ -31,7 +61,7 @@ export default function ProcurementModule() {
           (txn.wbNumber && txn.wbNumber.toLowerCase().includes(query)) ||
           (txn.grnNumber && txn.grnNumber.toLowerCase().includes(query)) ||
           (txn.invoiceNumber && txn.invoiceNumber.toLowerCase().includes(query)) ||
-          txn.documents.some(doc => doc.name.toLowerCase().includes(query));
+          txn.documents.some((doc: any) => doc.name.toLowerCase().includes(query));
       }
 
       const matchesPO = selectedPO === "all" || txn.poNumber === selectedPO;
@@ -50,7 +80,7 @@ export default function ProcurementModule() {
 
       return matchesSearch && matchesPO && matchesDate;
     });
-  }, [searchQuery, selectedPO, selectedDateRange]);
+  }, [transactions, searchQuery, selectedPO, selectedDateRange]);
 
   const resetFilters = () => {
     setSearchQuery("");
@@ -78,23 +108,27 @@ export default function ProcurementModule() {
         </div>
 
         <Dialog open={isCreateModalOpen} onOpenChange={setIsCreateModalOpen}>
-          <DialogTrigger asChild>
-            <button className="enterprise-button-primary px-8 gap-3 shadow-md shadow-slate-200">
-              <Plus className="w-5 h-5 stroke-[3px]" />
-              <span>Create Purchase Order</span>
-            </button>
+          <DialogTrigger className="enterprise-button-primary px-8 gap-3 shadow-md shadow-slate-200 flex items-center">
+            <Plus className="w-5 h-5 stroke-[3px]" />
+            <span>Create Purchase Order</span>
           </DialogTrigger>
 
-          <DialogContent className="max-w-6xl max-h-[90vh] overflow-y-auto rounded-3xl p-0 border-none shadow-2xl">
-            <div className="bg-white">
-              <PurchaseOrderForm isModal onClose={() => setIsCreateModalOpen(false)} />
+          <DialogContent className="max-w-[95vw] sm:max-w-[95vw] w-[95vw] h-[92vh] max-h-[92vh] overflow-y-auto rounded-3xl p-0 border-none shadow-2xl">
+            <div className="bg-white w-full h-full min-h-full flex flex-col">
+              <PurchaseOrderForm 
+                isModal 
+                onClose={() => setIsCreateModalOpen(false)} 
+                onSuccess={() => {
+                  setIsCreateModalOpen(false);
+                  fetchTransactions();
+                }}
+              />
             </div>
           </DialogContent>
         </Dialog>
       </div>
 
 
-      {/* Standardized Filter Bar */}
       <div className="enterprise-card border-[#e5e7eb] shadow-sm p-4 rounded-xl bg-white mb-6">
         <FilterBar
           searchQuery={searchQuery}
@@ -104,17 +138,23 @@ export default function ProcurementModule() {
           selectedDateRange={selectedDateRange}
           setSelectedDateRange={setSelectedDateRange}
           resetFilters={resetFilters}
-          samplePOs={samplePOs}
+          samplePOs={Array.from(new Set(transactions.map(t => t.poNumber))).filter(p => p !== "-").map(p => ({ id: p }))}
           placeholder="Search transaction, PO or keyword..."
         />
       </div>
 
-      {/* Transaction Table */}
-      <DocumentTable
-        transactions={filteredTransactions}
-        onView={setSelectedTransaction}
-        title="Procurement Transactions"
-      />
+      {isLoading ? (
+        <div className="flex flex-col items-center justify-center py-32 space-y-4">
+          <Loader2 className="w-12 h-12 text-slate-300 animate-spin" />
+          <p className="text-slate-400 font-bold uppercase tracking-widest text-[10px]">Syncing with Industrial Node...</p>
+        </div>
+      ) : (
+        <DocumentTable
+          transactions={filteredTransactions}
+          onView={setSelectedTransaction}
+          title="Procurement Transactions"
+        />
+      )}
 
       <DocumentViewer
         transaction={selectedTransaction}
