@@ -113,7 +113,7 @@ export default function SuperAdminApp({ user, onLogout }: { user: any, onLogout:
   const handleCreateCompany = async (e: React.FormEvent) => {
     e.preventDefault();
     try {
-      const res = await fetch("http://localhost:8000/admin/companies", {
+      const res = await fetch(`${API_BASE_URL}/admin/companies`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",

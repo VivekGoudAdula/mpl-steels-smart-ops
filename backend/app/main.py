@@ -26,9 +26,15 @@ os.makedirs("uploads", exist_ok=True)
 app.mount("/uploads", StaticFiles(directory="uploads"), name="uploads")
 
 # Enable CORS
+origins = [o.strip() for o in settings.ALLOWED_ORIGINS.split(",")]
+# Add variant without trailing slash if present
+for o in list(origins):
+    if o.endswith("/"):
+        origins.append(o[:-1])
+
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=settings.ALLOWED_ORIGINS.split(","),
+    allow_origins=origins,
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
