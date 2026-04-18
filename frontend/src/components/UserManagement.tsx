@@ -2,6 +2,7 @@ import React, { useState, useEffect } from "react";
 import { Users, UserPlus, FileEdit, CheckCircle2, XCircle, Search, Shield, RefreshCw } from "lucide-react";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
+import { API_BASE_URL } from "@/lib/api";
 
 interface User {
   id: string;
@@ -33,7 +34,7 @@ export default function UserManagement() {
     setIsLoading(true);
     try {
       const token = localStorage.getItem("token");
-      const res = await fetch("http://localhost:8000/users/", {
+      const res = await fetch(`${API_BASE_URL}/users/`, {
         headers: { "Authorization": `Bearer ${token}` }
       });
       if (res.ok) {
@@ -58,7 +59,7 @@ export default function UserManagement() {
     setIsSubmitting(true);
     try {
       const token = localStorage.getItem("token");
-      const res = await fetch("http://localhost:8000/users/", {
+      const res = await fetch(`${API_BASE_URL}/users/`, {
         method: "POST",
         headers: { 
           "Content-Type": "application/json",
@@ -87,7 +88,7 @@ export default function UserManagement() {
     const newStatus = user.status === "active" ? "inactive" : "active";
     try {
       const token = localStorage.getItem("token");
-      const res = await fetch(`http://localhost:8000/users/${user.id}/status`, {
+      const res = await fetch(`${API_BASE_URL}/users/${user.id}/status`, {
         method: "PATCH",
         headers: { 
           "Content-Type": "application/json",

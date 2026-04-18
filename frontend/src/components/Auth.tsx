@@ -13,6 +13,8 @@ import {
 } from "lucide-react";
 import { Checkbox } from "@/components/ui/checkbox";
 
+import { API_BASE_URL } from "@/lib/api";
+
 export type UserRole = "super_admin" | "editor" | "viewer" | "admin" | "operations" | "finance";
 
 interface AuthProps {
@@ -42,7 +44,7 @@ export default function Auth({ onAuthSuccess, onBack }: AuthProps) {
     setIsLoading(true);
 
     try {
-      const res = await fetch("http://localhost:8000/auth/login", {
+      const res = await fetch(`${API_BASE_URL}/auth/login`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ email: formData.email, password: formData.password })

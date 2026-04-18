@@ -28,7 +28,7 @@ import {
 import { Badge } from "@/components/ui/badge";
 import { cn } from "@/lib/utils";
 import { documentTypes } from "@/lib/mockData";
-import api from "@/lib/api";
+import api, { API_BASE_URL } from "@/lib/api";
 import { toast } from "sonner";
 
 interface DocumentViewerProps {
@@ -88,7 +88,7 @@ export default function DocumentViewer({ transaction: txn, isOpen, onClose, user
   const handleZoomOut = () => setZoom(prev => Math.max(prev - 25, 50));
   const toggleFullscreen = () => setIsFullscreen(!isFullscreen);
   
-  const BACKEND_URL = "http://localhost:8000";
+  const BACKEND_URL = API_BASE_URL;
   const resolveDocUrl = (url: string) =>
     url?.startsWith("http") ? url : `${BACKEND_URL}${url}`;
 
@@ -242,7 +242,7 @@ export default function DocumentViewer({ transaction: txn, isOpen, onClose, user
             <div className="flex-1 p-4 pb-6 overflow-hidden flex flex-col">
               <div className="flex-1 bg-gray-100 rounded-[2.5rem] shadow-inner border border-slate-300 relative custom-scrollbar p-2 flex justify-center">
                 {(() => {
-                  const BACKEND = "http://localhost:8000";
+                  const BACKEND = API_BASE_URL;
                   const resolveUrl = (url: string) =>
                     url.startsWith("http") ? url : `${BACKEND}${url}`;
                   const dummyUrl = `/xerox-scan.pdf#toolbar=0&navpanes=0&zoom=${zoom}`;

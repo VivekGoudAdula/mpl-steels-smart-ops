@@ -2,6 +2,7 @@ import React, { useState, useEffect } from "react";
 import { Building2, LogOut, Search, Plus, Users, UserCog, Mail, Briefcase, ArrowLeft, Loader2, CheckCircle, Shield, MoreVertical, CheckCircle2, Activity, FileText, Settings, LayoutDashboard, Zap } from "lucide-react";
 import { Toaster, toast } from "sonner";
 import { cn } from "@/lib/utils";
+import { API_BASE_URL } from "@/lib/api";
 
 interface Company {
   id: string;
@@ -64,7 +65,7 @@ export default function SuperAdminApp({ user, onLogout }: { user: any, onLogout:
 
   const fetchOverview = async () => {
     try {
-      const res = await fetch("http://localhost:8000/admin/overview", {
+      const res = await fetch(`${API_BASE_URL}/admin/overview`, {
         headers: { "Authorization": `Bearer ${localStorage.getItem("token")}` }
       });
       if (res.ok) setOverview(await res.json());
@@ -77,7 +78,7 @@ export default function SuperAdminApp({ user, onLogout }: { user: any, onLogout:
 
   const fetchCompanies = async () => {
     try {
-      const res = await fetch("http://localhost:8000/admin/companies", {
+      const res = await fetch(`${API_BASE_URL}/admin/companies`, {
         headers: { "Authorization": `Bearer ${localStorage.getItem("token")}` }
       });
       if (res.ok) setCompanies(await res.json());
@@ -90,7 +91,7 @@ export default function SuperAdminApp({ user, onLogout }: { user: any, onLogout:
 
   const fetchCompanyDetails = async (companyId: string) => {
     try {
-      const res = await fetch(`http://localhost:8000/admin/companies/${companyId}/details`, {
+      const res = await fetch(`${API_BASE_URL}/admin/companies/${companyId}/details`, {
         headers: { "Authorization": `Bearer ${localStorage.getItem("token")}` }
       });
       if (res.ok) setCompanyDetails(await res.json());
@@ -137,7 +138,7 @@ export default function SuperAdminApp({ user, onLogout }: { user: any, onLogout:
     e.preventDefault();
     if (!selectedCompany) return;
     try {
-      const res = await fetch("http://localhost:8000/admin/users", {
+      const res = await fetch(`${API_BASE_URL}/admin/users`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -162,7 +163,7 @@ export default function SuperAdminApp({ user, onLogout }: { user: any, onLogout:
   const handleToggleStatus = async (userId: string, currentStatus: string) => {
     const newStatus = currentStatus === "active" ? "inactive" : "active";
     try {
-      const res = await fetch(`http://localhost:8000/admin/users/${userId}/status`, {
+      const res = await fetch(`${API_BASE_URL}/admin/users/${userId}/status`, {
         method: "PATCH",
         headers: {
           "Content-Type": "application/json",
