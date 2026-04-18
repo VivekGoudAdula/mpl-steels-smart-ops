@@ -104,6 +104,10 @@ export const documentTypes = [
   { id: "WB", name: "Weighbridge Slip", color: "bg-orange-100 text-orange-700 border-orange-200" },
   { id: "GRN", name: "Goods Receipt Note", color: "bg-emerald-100 text-emerald-700 border-emerald-200" },
   { id: "Invoice", name: "Supplier Invoice", color: "bg-purple-100 text-purple-700 border-purple-200" },
+  { id: "QC", name: "Quality Certificate", color: "bg-yellow-100 text-yellow-700 border-yellow-200" },
+  { id: "DC", name: "Delivery Challan", color: "bg-cyan-100 text-cyan-700 border-cyan-200" },
+  { id: "TRK", name: "Truck Receipt", color: "bg-rose-100 text-rose-700 border-rose-200" },
+  { id: "LC", name: "Lab Certificate", color: "bg-indigo-100 text-indigo-700 border-indigo-200" },
 ];
 
 export interface TransactionDocument {
@@ -137,6 +141,10 @@ export const sampleTransactions: Transaction[] = [
       { id: "D2", name: "WB_88231_Entry.pdf", type: "WB", url: "/xerox-scan.pdf", date: "2024-04-10" },
       { id: "D3", name: "GRN_1001_Verified.pdf", type: "GRN", url: "/xerox-scan.pdf", date: "2024-04-11" },
       { id: "D4", name: "INV_2024_001_Tata.pdf", type: "Invoice", url: "/xerox-scan.pdf", date: "2024-04-15" },
+      { id: "D9", name: "QC_TataSteel_HRC_Apr24.pdf", type: "QC", url: "/xerox-scan.pdf", date: "2024-04-10" },
+      { id: "D10", name: "DC_TataSteel_PO123.pdf", type: "DC", url: "/xerox-scan.pdf", date: "2024-04-10" },
+      { id: "D11", name: "TRK_MH12GT4455_Receipt.pdf", type: "TRK", url: "/xerox-scan.pdf", date: "2024-04-10" },
+      { id: "D12", name: "LAB_HRC_Chemical_Analysis.pdf", type: "LC", url: "/xerox-scan.pdf", date: "2024-04-11" },
     ]
   },
   {
@@ -150,6 +158,10 @@ export const sampleTransactions: Transaction[] = [
       { id: "D5", name: "PO_124_JSW.pdf", type: "PO", url: "/xerox-scan.pdf", date: "2024-04-05" },
       { id: "D6", name: "WB_99102_JSW.pdf", type: "WB", url: "/xerox-scan.pdf", date: "2024-04-12" },
       { id: "D7", name: "GRN_1002_JSW.pdf", type: "GRN", url: "/xerox-scan.pdf", date: "2024-04-13" },
+      { id: "D13", name: "INV_2024_002_JSW.pdf", type: "Invoice", url: "/xerox-scan.pdf", date: "2024-04-13" },
+      { id: "D14", name: "QC_JSW_IronOre_Apr24.pdf", type: "QC", url: "/xerox-scan.pdf", date: "2024-04-12" },
+      { id: "D15", name: "DC_JSW_PO124_Challan.pdf", type: "DC", url: "/xerox-scan.pdf", date: "2024-04-12" },
+      { id: "D16", name: "TRK_KA01MJ9901_Receipt.pdf", type: "TRK", url: "/xerox-scan.pdf", date: "2024-04-12" },
     ]
   },
   {
@@ -161,6 +173,8 @@ export const sampleTransactions: Transaction[] = [
     date: "2024-04-08",
     documents: [
       { id: "D8", name: "PO_125_GlobalSteel.pdf", type: "PO", url: "/xerox-scan.pdf", date: "2024-04-08" },
+      { id: "D17", name: "DC_GlobalSteel_PO125.pdf", type: "DC", url: "/xerox-scan.pdf", date: "2024-04-08" },
+      { id: "D18", name: "QC_GlobalSteel_Billets.pdf", type: "QC", url: "/xerox-scan.pdf", date: "2024-04-09" },
     ]
   }
 ];
